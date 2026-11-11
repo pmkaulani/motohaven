@@ -26,7 +26,7 @@ export function VehicleGallery({ images, vehicleTitle }: GalleryProps) {
 
   return (
     <div className="space-y-3">
-      {/* Main Image Frame (4:3 aspect) */}
+      {/* Main Image Frame (4:3 aspect ratio, unboxed outer) */}
       <div className="relative aspect-[4/3] w-full rounded-card overflow-hidden bg-background-tertiary border border-border group">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -36,13 +36,13 @@ export function VehicleGallery({ images, vehicleTitle }: GalleryProps) {
           onClick={() => setLightboxOpen(true)}
         />
 
-        {/* Arrow Controls */}
+        {/* Quiet Arrow Controls */}
         {safeImages.length > 1 && (
           <>
             <button
               type="button"
               onClick={handlePrev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 text-text-primary hover:bg-white shadow-md transition-all opacity-90 hover:opacity-100"
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-btn bg-white/90 text-text-primary hover:bg-white transition-opacity opacity-80 hover:opacity-100"
               aria-label="Previous image"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -50,7 +50,7 @@ export function VehicleGallery({ images, vehicleTitle }: GalleryProps) {
             <button
               type="button"
               onClick={handleNext}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 text-text-primary hover:bg-white shadow-md transition-all opacity-90 hover:opacity-100"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-btn bg-white/90 text-text-primary hover:bg-white transition-opacity opacity-80 hover:opacity-100"
               aria-label="Next image"
             >
               <ChevronRight className="w-5 h-5" />
@@ -58,17 +58,17 @@ export function VehicleGallery({ images, vehicleTitle }: GalleryProps) {
           </>
         )}
 
-        {/* Counter and Fullscreen trigger */}
+        {/* Counter & Fullscreen Trigger */}
         <div className="absolute bottom-3 right-3 flex items-center gap-2">
-          <span className="px-2.5 py-1 text-xs font-semibold text-white bg-black/70 rounded-full backdrop-blur-sm">
+          <span className="px-2.5 py-1 text-xs font-medium text-white bg-black/60 rounded">
             {activeIndex + 1} / {safeImages.length}
           </span>
           <button
             type="button"
             onClick={() => setLightboxOpen(true)}
-            className="p-1.5 rounded-full bg-black/70 text-white hover:bg-black backdrop-blur-sm transition-colors"
-            title="Expand Fullscreen"
-            aria-label="Expand Fullscreen"
+            className="p-1.5 rounded bg-black/60 text-white hover:bg-black transition-colors"
+            title="Full size view"
+            aria-label="Full size view"
           >
             <Maximize2 className="w-3.5 h-3.5" />
           </button>
@@ -77,7 +77,7 @@ export function VehicleGallery({ images, vehicleTitle }: GalleryProps) {
 
       {/* Thumbnails Strip */}
       {safeImages.length > 1 && (
-        <div className="flex items-center gap-2.5 overflow-x-auto pb-1 pt-0.5">
+        <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
           {safeImages.map((src, idx) => (
             <button
               key={idx}
@@ -85,7 +85,7 @@ export function VehicleGallery({ images, vehicleTitle }: GalleryProps) {
               onClick={() => setActiveIndex(idx)}
               className={`relative flex-shrink-0 w-20 sm:w-24 aspect-[4/3] rounded overflow-hidden border-2 transition-all ${
                 activeIndex === idx
-                  ? "border-action ring-1 ring-action"
+                  ? "border-text-primary"
                   : "border-border opacity-70 hover:opacity-100"
               }`}
             >
@@ -100,10 +100,10 @@ export function VehicleGallery({ images, vehicleTitle }: GalleryProps) {
         </div>
       )}
 
-      {/* Lightbox / Modal View */}
+      {/* Lightbox / Modal */}
       {lightboxOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
           onClick={() => setLightboxOpen(false)}
         >
           <div
@@ -122,19 +122,19 @@ export function VehicleGallery({ images, vehicleTitle }: GalleryProps) {
                 <button
                   type="button"
                   onClick={handlePrev}
-                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white"
+                  className="p-2 rounded bg-white/20 hover:bg-white/30 text-white"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
               )}
-              <span className="text-sm font-semibold">
-                Photo {activeIndex + 1} of {safeImages.length}
+              <span className="text-sm">
+                {activeIndex + 1} of {safeImages.length}
               </span>
               {safeImages.length > 1 && (
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white"
+                  className="p-2 rounded bg-white/20 hover:bg-white/30 text-white"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -142,7 +142,7 @@ export function VehicleGallery({ images, vehicleTitle }: GalleryProps) {
               <button
                 type="button"
                 onClick={() => setLightboxOpen(false)}
-                className="ml-6 px-4 py-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 rounded-btn text-white"
+                className="ml-4 px-4 py-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 rounded-btn text-white"
               >
                 Close
               </button>

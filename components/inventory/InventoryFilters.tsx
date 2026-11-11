@@ -41,7 +41,6 @@ export function InventoryFilters({ totalResults }: FilterProps) {
   const [localMaxYear, setLocalMaxYear] = useState(maxYear);
   const [localSort, setLocalSort] = useState(sort);
 
-  // Sync when searchParams change
   React.useEffect(() => {
     setLocalQ(q);
     setLocalBrand(brand);
@@ -106,7 +105,6 @@ export function InventoryFilters({ totalResults }: FilterProps) {
     applyFilters({ [key]: "" });
   };
 
-  // Active filters count
   const activeCount = [
     q, brand, bodyType, condition, transmission, fuel,
     minPrice, maxPrice, minYear, maxYear
@@ -114,8 +112,8 @@ export function InventoryFilters({ totalResults }: FilterProps) {
 
   return (
     <div className="space-y-4">
-      {/* Top Bar: Search Input, Quick Sort, Mobile Filter Trigger */}
-      <div className="bg-white p-4 rounded-card border border-border flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-sm">
+      {/* Calm Search & Filter Toolbar (Unboxed) */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         {/* Search Bar */}
         <div className="relative flex-1">
           <input
@@ -126,23 +124,22 @@ export function InventoryFilters({ totalResults }: FilterProps) {
               if (e.key === "Enter") applyFilters();
             }}
             placeholder="Search make, model, or keywords..."
-            className="w-full pl-9 pr-20 py-2.5 text-sm bg-background-secondary rounded-btn border border-border focus:border-action focus:bg-white focus:outline-none"
+            className="w-full h-11 pl-10 pr-20 text-sm bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
           />
-          <Search className="w-4 h-4 text-text-secondary absolute left-3 top-3 pointer-events-none" />
+          <Search className="w-4 h-4 text-text-secondary absolute left-3.5 top-3.5 pointer-events-none" />
           <button
             type="button"
             onClick={() => applyFilters()}
-            className="absolute right-1.5 top-1.5 px-3 py-1 text-xs font-semibold bg-action text-white rounded-btn hover:bg-action-hover"
+            className="absolute right-1.5 top-1.5 h-8 px-3 text-xs font-semibold bg-action text-white rounded-btn hover:bg-action-hover"
           >
             Search
           </button>
         </div>
 
-        {/* Sort & Mobile Filter Button */}
-        <div className="flex items-center gap-2">
-          {/* Quick Sort Dropdown */}
+        {/* Sort & Filter Button */}
+        <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-2 flex-1 sm:flex-none">
-            <span className="text-xs font-semibold text-text-secondary hidden sm:inline">
+            <span className="text-xs font-medium text-text-secondary hidden sm:inline">
               Sort:
             </span>
             <select
@@ -151,7 +148,7 @@ export function InventoryFilters({ totalResults }: FilterProps) {
                 setLocalSort(e.target.value);
                 applyFilters({ sort: e.target.value });
               }}
-              className="w-full sm:w-auto px-3 py-2 text-xs font-medium bg-background-secondary rounded-btn border border-border focus:outline-none cursor-pointer"
+              className="w-full sm:w-auto h-11 px-3 text-xs font-medium bg-white rounded-btn border border-border focus:outline-none cursor-pointer"
             >
               <option value="recent">Recently Added</option>
               <option value="price_asc">Price: Low to High</option>
@@ -162,13 +159,12 @@ export function InventoryFilters({ totalResults }: FilterProps) {
             </select>
           </div>
 
-          {/* Trigger Mobile Filters Drawer */}
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-background-secondary border border-border rounded-btn hover:bg-background-tertiary transition-colors"
+            className="h-11 inline-flex items-center gap-2 px-4 text-xs font-semibold bg-white border border-border rounded-btn hover:bg-background-secondary transition-colors"
           >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-action" />
+            <SlidersHorizontal className="w-4 h-4 text-action" />
             <span>Filters</span>
             {activeCount > 0 && (
               <span className="w-4 h-4 rounded-full bg-action text-white text-[10px] flex items-center justify-center font-bold">
@@ -179,95 +175,95 @@ export function InventoryFilters({ totalResults }: FilterProps) {
         </div>
       </div>
 
-      {/* Active Filter Chips */}
+      {/* Active Filter Chips (Quiet text chips) */}
       {activeCount > 0 && (
-        <div className="flex items-center flex-wrap gap-2 text-xs">
-          <span className="text-text-secondary font-medium">Active filters:</span>
+        <div className="flex items-center flex-wrap gap-2 text-xs pt-1">
+          <span className="text-text-secondary">Filters:</span>
           {q && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-background-secondary border border-border text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
               Keyword: &quot;{q}&quot;
-              <button type="button" onClick={() => removeFilter("q")} className="hover:text-red-600">
-                <X className="w-3 h-3" />
+              <button type="button" onClick={() => removeFilter("q")} className="hover:text-red-700">
+                <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           {brand && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-background-secondary border border-border text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
               Make: {brand}
-              <button type="button" onClick={() => removeFilter("brand")} className="hover:text-red-600">
-                <X className="w-3 h-3" />
+              <button type="button" onClick={() => removeFilter("brand")} className="hover:text-red-700">
+                <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           {bodyType && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-background-secondary border border-border text-text-primary">
-              Type: {bodyType}
-              <button type="button" onClick={() => removeFilter("body_type")} className="hover:text-red-600">
-                <X className="w-3 h-3" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
+              Body: {bodyType}
+              <button type="button" onClick={() => removeFilter("body_type")} className="hover:text-red-700">
+                <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           {condition && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-background-secondary border border-border text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
               {condition}
-              <button type="button" onClick={() => removeFilter("condition")} className="hover:text-red-600">
-                <X className="w-3 h-3" />
+              <button type="button" onClick={() => removeFilter("condition")} className="hover:text-red-700">
+                <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           {transmission && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-background-secondary border border-border text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
               {transmission}
-              <button type="button" onClick={() => removeFilter("transmission")} className="hover:text-red-600">
-                <X className="w-3 h-3" />
+              <button type="button" onClick={() => removeFilter("transmission")} className="hover:text-red-700">
+                <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           {fuel && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-background-secondary border border-border text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
               {fuel}
-              <button type="button" onClick={() => removeFilter("fuel")} className="hover:text-red-600">
-                <X className="w-3 h-3" />
+              <button type="button" onClick={() => removeFilter("fuel")} className="hover:text-red-700">
+                <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           {(minPrice || maxPrice) && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-background-secondary border border-border text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
               Price: {minPrice ? `KSh ${Number(minPrice).toLocaleString("en-KE")}` : "0"} – {maxPrice ? `KSh ${Number(maxPrice).toLocaleString("en-KE")}` : "Any"}
-              <button type="button" onClick={() => { removeFilter("minPrice"); removeFilter("maxPrice"); }} className="hover:text-red-600">
-                <X className="w-3 h-3" />
+              <button type="button" onClick={() => { removeFilter("minPrice"); removeFilter("maxPrice"); }} className="hover:text-red-700">
+                <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           <button
             type="button"
             onClick={handleReset}
-            className="text-text-secondary hover:text-action underline ml-2 flex items-center gap-1"
+            className="text-text-secondary hover:text-action underline ml-1 flex items-center gap-1"
           >
             <RotateCcw className="w-3 h-3" />
-            <span>Reset All</span>
+            <span>Reset</span>
           </button>
         </div>
       )}
 
-      {/* Filter Modal / Drawer (Responsive for Mobile and Desktop) */}
+      {/* Filter Drawer (Clean White, Accessible, No Heavy Shadow) */}
       {drawerOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-black/40 backdrop-blur-sm animate-in fade-in">
-          <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between">
+        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-black/30">
+          <div className="relative w-full max-w-md bg-white h-full flex flex-col justify-between border-l border-border">
             {/* Drawer Header */}
-            <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between">
+            <div className="p-5 border-b border-border flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-text-primary">
-                  Filter Vehicle Inventory
+                  Filter Inventory
                 </h3>
-                <p className="text-xs text-text-secondary">
-                  Showing {totalResults} matching vehicles
+                <p className="text-xs text-text-secondary mt-0.5">
+                  Showing {totalResults} available vehicles
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setDrawerOpen(false)}
-                className="p-2 text-text-secondary hover:text-text-primary hover:bg-background-secondary rounded-btn"
+                className="p-2 text-text-secondary hover:text-text-primary rounded-btn"
                 aria-label="Close Filter Drawer"
               >
                 <X className="w-5 h-5" />
@@ -275,16 +271,15 @@ export function InventoryFilters({ totalResults }: FilterProps) {
             </div>
 
             {/* Scrollable Filter Fields */}
-            <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 text-xs">
-              {/* Make / Brand */}
+            <div className="p-6 overflow-y-auto space-y-5 flex-1 text-sm">
               <div>
-                <label className="block font-semibold text-text-primary mb-1.5">
+                <label className="block font-semibold text-text-primary mb-1.5 text-xs">
                   Make / Manufacturer
                 </label>
                 <select
                   value={localBrand}
                   onChange={(e) => setLocalBrand(e.target.value)}
-                  className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                  className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
                 >
                   <option value="">All Makes</option>
                   <option value="Toyota">Toyota</option>
@@ -294,20 +289,17 @@ export function InventoryFilters({ totalResults }: FilterProps) {
                   <option value="Mercedes-Benz">Mercedes-Benz</option>
                   <option value="Nissan">Nissan</option>
                   <option value="Honda">Honda</option>
-                  <option value="Volkswagen">Volkswagen</option>
-                  <option value="Land Rover">Land Rover</option>
                 </select>
               </div>
 
-              {/* Body Type */}
               <div>
-                <label className="block font-semibold text-text-primary mb-1.5">
+                <label className="block font-semibold text-text-primary mb-1.5 text-xs">
                   Body Type
                 </label>
                 <select
                   value={localBodyType}
                   onChange={(e) => setLocalBodyType(e.target.value)}
-                  className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                  className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
                 >
                   <option value="">All Body Types</option>
                   <option value="SUV">SUV & 4x4</option>
@@ -315,19 +307,17 @@ export function InventoryFilters({ totalResults }: FilterProps) {
                   <option value="Station Wagon">Station Wagon</option>
                   <option value="Hatchback">Hatchback</option>
                   <option value="Pickup">Pickup</option>
-                  <option value="Coupe">Coupe</option>
                 </select>
               </div>
 
-              {/* Condition */}
               <div>
-                <label className="block font-semibold text-text-primary mb-1.5">
-                  Vehicle Condition
+                <label className="block font-semibold text-text-primary mb-1.5 text-xs">
+                  Condition
                 </label>
                 <select
                   value={localCondition}
                   onChange={(e) => setLocalCondition(e.target.value)}
-                  className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                  className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
                 >
                   <option value="">All Conditions</option>
                   <option value="Foreign Used">Foreign Used (Import)</option>
@@ -336,9 +326,8 @@ export function InventoryFilters({ totalResults }: FilterProps) {
                 </select>
               </div>
 
-              {/* Price Range */}
               <div>
-                <label className="block font-semibold text-text-primary mb-1.5">
+                <label className="block font-semibold text-text-primary mb-1.5 text-xs">
                   Price Range (KSh)
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -347,28 +336,27 @@ export function InventoryFilters({ totalResults }: FilterProps) {
                     placeholder="Min KSh"
                     value={localMinPrice}
                     onChange={(e) => setLocalMinPrice(e.target.value)}
-                    className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                    className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none text-sm"
                   />
                   <input
                     type="number"
                     placeholder="Max KSh"
                     value={localMaxPrice}
                     onChange={(e) => setLocalMaxPrice(e.target.value)}
-                    className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                    className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none text-sm"
                   />
                 </div>
               </div>
 
-              {/* Transmission & Fuel */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-semibold text-text-primary mb-1.5">
+                  <label className="block font-semibold text-text-primary mb-1.5 text-xs">
                     Transmission
                   </label>
                   <select
                     value={localTransmission}
                     onChange={(e) => setLocalTransmission(e.target.value)}
-                    className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                    className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
                   >
                     <option value="">All</option>
                     <option value="Automatic">Automatic</option>
@@ -376,60 +364,36 @@ export function InventoryFilters({ totalResults }: FilterProps) {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold text-text-primary mb-1.5">
+                  <label className="block font-semibold text-text-primary mb-1.5 text-xs">
                     Fuel Type
                   </label>
                   <select
                     value={localFuel}
                     onChange={(e) => setLocalFuel(e.target.value)}
-                    className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                    className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
                   >
                     <option value="">All</option>
                     <option value="Petrol">Petrol</option>
                     <option value="Diesel">Diesel</option>
                     <option value="Hybrid">Hybrid</option>
-                    <option value="Electric">Electric</option>
                   </select>
-                </div>
-              </div>
-
-              {/* Year Range */}
-              <div>
-                <label className="block font-semibold text-text-primary mb-1.5">
-                  Year of Manufacture
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="number"
-                    placeholder="From (e.g. 2016)"
-                    value={localMinYear}
-                    onChange={(e) => setLocalMinYear(e.target.value)}
-                    className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
-                  />
-                  <input
-                    type="number"
-                    placeholder="To (e.g. 2024)"
-                    value={localMaxYear}
-                    onChange={(e) => setLocalMaxYear(e.target.value)}
-                    className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
-                  />
                 </div>
               </div>
             </div>
 
             {/* Drawer Footer Actions */}
-            <div className="p-4 sm:p-5 border-t border-border bg-background-secondary flex items-center gap-3">
+            <div className="p-5 border-t border-border bg-background-secondary flex items-center gap-3">
               <button
                 type="button"
                 onClick={handleReset}
-                className="flex-1 py-2.5 px-4 text-xs font-semibold border border-border rounded-btn bg-white text-text-primary hover:bg-background-tertiary transition-colors"
+                className="flex-1 h-11 px-4 text-xs font-semibold border border-border rounded-btn bg-white text-text-primary hover:bg-background-tertiary transition-colors"
               >
                 Reset
               </button>
               <button
                 type="button"
                 onClick={() => applyFilters()}
-                className="flex-1 py-2.5 px-4 text-xs font-semibold bg-action text-white rounded-btn hover:bg-action-hover transition-colors"
+                className="flex-1 h-11 px-4 text-xs font-semibold bg-action text-white rounded-btn hover:bg-action-hover transition-colors"
               >
                 Apply Filters
               </button>

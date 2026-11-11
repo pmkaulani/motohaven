@@ -32,14 +32,12 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
   const [description, setDescription] = useState(initialVehicle?.description || "");
   const [featuresInput, setFeaturesInput] = useState(initialVehicle?.features?.join(", ") || "");
 
-  // Photo URLs state
   const [photoUrls, setPhotoUrls] = useState<string[]>(initialVehicle?.photo_urls || []);
   const [coverPhoto, setCoverPhoto] = useState<string>(initialVehicle?.cover_photo || initialVehicle?.photo_urls?.[0] || "");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Handle local photo upload via /api/upload
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     setUploading(true);
@@ -146,23 +144,22 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/admin/cars"
-            className="p-2 rounded-btn border border-border bg-white text-text-secondary hover:text-text-primary"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary">
-              {isEditing ? `Edit ${initialVehicle?.year} ${initialVehicle?.brand} ${initialVehicle?.model}` : "Add New Vehicle to Inventory"}
-            </h1>
-            <p className="text-xs text-text-secondary">
-              Enter vehicle specifications and genuine showroom photographs.
-            </p>
-          </div>
+    <div className="max-w-3xl space-y-8">
+      {/* Header */}
+      <div className="flex items-center gap-3 border-b border-border pb-4">
+        <Link
+          href="/admin/cars"
+          className="p-2 rounded-btn border border-border bg-white text-text-secondary hover:text-text-primary"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">
+            {isEditing ? `Edit ${initialVehicle?.year} ${initialVehicle?.brand} ${initialVehicle?.model}` : "Add Vehicle to Inventory"}
+          </h1>
+          <p className="text-xs text-text-secondary mt-0.5">
+            Fill in vehicle specifications and genuine showroom photographs.
+          </p>
         </div>
       </div>
 
@@ -173,17 +170,18 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6 text-xs">
-        {/* Basic Vehicle Details Card */}
-        <div className="bg-white p-6 rounded-card border border-border shadow-sm space-y-4">
-          <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
-            1. Core Vehicle Identity & Pricing
+      {/* Form with clean sections, unboxed, separated by subtle dividers */}
+      <form onSubmit={handleSubmit} className="space-y-8 text-sm">
+        {/* Section 1: Vehicle Details */}
+        <div className="space-y-4">
+          <h2 className="text-base font-bold text-text-primary">
+            Vehicle details
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
-                Make / Manufacturer <span className="text-red-600">*</span>
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
+                Make <span className="text-red-600">*</span>
               </label>
               <input
                 type="text"
@@ -191,41 +189,41 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
                 placeholder="e.g. Toyota, BMW, Mazda"
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
                 Model <span className="text-red-600">*</span>
               </label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Prado TX, 320i, CX-5"
+                placeholder="e.g. Prado, 320i, CX-5"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
                 Trim / Grade
               </label>
               <input
                 type="text"
-                placeholder="e.g. L-Package, M Sport, Limited"
+                placeholder="e.g. TX, M Sport, Limited"
                 value={trim}
                 onChange={(e) => setTrim(e.target.value)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
                 Year of Manufacture <span className="text-red-600">*</span>
               </label>
               <input
@@ -235,12 +233,12 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
                 max="2030"
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
                 Selling Price (KSh) <span className="text-red-600">*</span>
               </label>
               <input
@@ -250,12 +248,12 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
                 placeholder="e.g. 3500000"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
                 Mileage (km) <span className="text-red-600">*</span>
               </label>
               <input
@@ -265,40 +263,27 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
                 placeholder="e.g. 58000"
                 value={mileage}
                 onChange={(e) => setMileage(e.target.value)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block font-semibold text-text-primary mb-1">
-                Stock Reference / Tag
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. MH-2018-CX5"
-                value={stockReference}
-                onChange={(e) => setStockReference(e.target.value)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
               />
             </div>
           </div>
         </div>
 
-        {/* Technical Specifications */}
-        <div className="bg-white p-6 rounded-card border border-border shadow-sm space-y-4">
-          <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
-            2. Technical Specifications
+        {/* Section 2: Specifications */}
+        <div className="space-y-4 border-t border-border pt-6">
+          <h2 className="text-base font-bold text-text-primary">
+            Specifications
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
                 Condition
               </label>
               <select
                 value={condition}
                 onChange={(e) => setCondition(e.target.value as any)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
               >
                 <option value="Foreign Used">Foreign Used (Import)</option>
                 <option value="Locally Used">Locally Used (Kenyan)</option>
@@ -307,13 +292,13 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
             </div>
 
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
                 Transmission
               </label>
               <select
                 value={transmission}
                 onChange={(e) => setTransmission(e.target.value as any)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
               >
                 <option value="Automatic">Automatic</option>
                 <option value="Manual">Manual</option>
@@ -321,13 +306,13 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
             </div>
 
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
                 Fuel Type
               </label>
               <select
                 value={fuel}
                 onChange={(e) => setFuel(e.target.value as any)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
               >
                 <option value="Petrol">Petrol</option>
                 <option value="Diesel">Diesel</option>
@@ -339,37 +324,36 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
-                Engine Displacement (cc)
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
+                Engine (cc)
               </label>
               <input
                 type="number"
                 value={engineCc}
                 onChange={(e) => setEngineCc(e.target.value)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
                 Body Type
               </label>
               <select
                 value={bodyType}
                 onChange={(e) => setBodyType(e.target.value as any)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
               >
                 <option value="SUV">SUV</option>
-                <option value="Saloon">Saloon / Sedan</option>
+                <option value="Saloon">Saloon</option>
                 <option value="Station Wagon">Station Wagon</option>
                 <option value="Hatchback">Hatchback</option>
                 <option value="Pickup">Pickup</option>
-                <option value="Coupe">Coupe</option>
               </select>
             </div>
 
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
                 Drivetrain
               </label>
               <input
@@ -377,38 +361,37 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
                 placeholder="e.g. 4WD, AWD, RWD"
                 value={drivetrain}
                 onChange={(e) => setDrivetrain(e.target.value)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-text-primary mb-1">
-                Origin / Import Country
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">
+                Stock Reference
               </label>
               <input
                 type="text"
-                placeholder="e.g. Japan Import, UK Import"
-                value={origin}
-                onChange={(e) => setOrigin(e.target.value)}
-                className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+                placeholder="e.g. MH-2018-CX5"
+                value={stockReference}
+                onChange={(e) => setStockReference(e.target.value)}
+                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
               />
             </div>
           </div>
         </div>
 
-        {/* Photography & Cover Selector */}
-        <div className="bg-white p-6 rounded-card border border-border shadow-sm space-y-4">
+        {/* Section 3: Photographs */}
+        <div className="space-y-4 border-t border-border pt-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
-              3. Vehicle Photographs ({photoUrls.length})
+            <h2 className="text-base font-bold text-text-primary">
+              Photographs ({photoUrls.length})
             </h2>
-            <span className="text-[11px] text-text-secondary">
-              Click star to set Cover Image
+            <span className="text-xs text-text-secondary">
+              Star indicates cover image
             </span>
           </div>
 
-          {/* Upload Input */}
-          <div className="border-2 border-dashed border-border rounded-card p-6 text-center hover:border-action transition-colors bg-background-secondary/30">
+          <div className="border border-border rounded-btn p-5 text-center bg-background-secondary/50">
             <input
               type="file"
               multiple
@@ -420,30 +403,22 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
             />
             <label
               htmlFor="photo-file-input"
-              className="cursor-pointer flex flex-col items-center space-y-2"
+              className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-btn bg-white border border-border text-xs font-semibold text-text-primary hover:bg-background-secondary"
             >
-              <div className="w-10 h-10 rounded-full bg-white border border-border flex items-center justify-center text-action shadow-sm">
-                <Upload className="w-5 h-5" />
-              </div>
-              <p className="text-xs font-semibold text-text-primary">
-                {uploading ? "Uploading high-res photos..." : "Click to select or drag showroom photographs"}
-              </p>
-              <p className="text-[11px] text-text-secondary">
-                Supports JPG, PNG, WebP up to 10MB each.
-              </p>
+              <Upload className="w-4 h-4 text-action" />
+              <span>{uploading ? "Uploading..." : "Upload Showroom Photos"}</span>
             </label>
           </div>
 
-          {/* Photo Previews Strip with Reorder & Cover Selector */}
           {photoUrls.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 pt-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
               {photoUrls.map((url, index) => {
                 const isCover = coverPhoto === url;
                 return (
                   <div
                     key={index}
                     className={`relative rounded overflow-hidden border aspect-[4/3] group ${
-                      isCover ? "ring-2 ring-emerald-600 border-emerald-600" : "border-border"
+                      isCover ? "border-text-primary ring-1 ring-text-primary" : "border-border"
                     }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -453,13 +428,12 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
                       className="w-full h-full object-cover"
                     />
 
-                    {/* Actions Overlay */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-1">
                       {index > 0 && (
                         <button
                           type="button"
                           onClick={() => movePhotoLeft(index)}
-                          className="p-1 rounded bg-white text-text-primary text-[10px]"
+                          className="p-1 rounded bg-white text-text-primary text-xs"
                           title="Move left"
                         >
                           ←
@@ -468,25 +442,25 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
                       <button
                         type="button"
                         onClick={() => setCoverPhoto(url)}
-                        className={`p-1 rounded text-[10px] ${
+                        className={`p-1 rounded text-xs ${
                           isCover ? "bg-emerald-600 text-white" : "bg-white text-text-primary"
                         }`}
-                        title="Set as Cover"
+                        title="Set Cover"
                       >
-                        <Star className="w-3 h-3 fill-current" />
+                        <Star className="w-3.5 h-3.5 fill-current" />
                       </button>
                       <button
                         type="button"
                         onClick={() => removePhoto(url)}
-                        className="p-1 rounded bg-red-600 text-white text-[10px]"
-                        title="Remove photo"
+                        className="p-1 rounded bg-red-600 text-white text-xs"
+                        title="Remove"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     </div>
 
                     {isCover && (
-                      <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-emerald-700 text-white text-[9px] font-bold">
+                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/70 text-white text-[10px] font-semibold">
                         COVER
                       </span>
                     )}
@@ -497,70 +471,70 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
           )}
         </div>
 
-        {/* Narrative Description & Features */}
-        <div className="bg-white p-6 rounded-card border border-border shadow-sm space-y-4">
-          <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
-            4. Description & Key Equipment
+        {/* Section 4: Description & Status */}
+        <div className="space-y-4 border-t border-border pt-6">
+          <h2 className="text-base font-bold text-text-primary">
+            Description & Status
           </h2>
 
           <div>
-            <label className="block font-semibold text-text-primary mb-1">
-              Dealership Notes & Detailed Condition
+            <label className="block text-xs font-semibold text-text-primary mb-1.5">
+              Vehicle Description
             </label>
             <textarea
               rows={4}
-              placeholder="Describe vehicle condition, service history, key equipment, and logbook availability."
+              placeholder="Describe condition, history, and key equipment."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
+              className="w-full p-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block font-semibold text-text-primary mb-1">
+            <label className="block text-xs font-semibold text-text-primary mb-1.5">
               Key Features (comma-separated)
             </label>
             <input
               type="text"
-              placeholder="e.g. Sunroof, Leather Seats, 360 Camera, Alloy Wheels, Push Start"
+              placeholder="e.g. Sunroof, Leather Seats, 360 Camera, Alloy Wheels"
               value={featuresInput}
               onChange={(e) => setFeaturesInput(e.target.value)}
-              className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
+              className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block font-semibold text-text-primary mb-1">
+            <label className="block text-xs font-semibold text-text-primary mb-1.5">
               Inventory Status
             </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
-              className="w-full sm:w-64 p-2.5 bg-background-secondary rounded-btn border border-border focus:outline-none"
+              className="w-full sm:w-64 h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
             >
-              <option value="Available">Available (Visible on public website)</option>
+              <option value="Available">Available (Visible in showroom)</option>
               <option value="Reserved">Reserved (Deposit taken)</option>
-              <option value="Sold">Sold (Marked as sold)</option>
-              <option value="Draft">Draft (Internal preparation)</option>
+              <option value="Sold">Sold (Marked sold)</option>
+              <option value="Draft">Draft (Internal)</option>
               <option value="Archived">Archived (Hidden)</option>
             </select>
           </div>
         </div>
 
-        {/* Form Submission Bar */}
-        <div className="flex items-center justify-end gap-3 pt-2">
+        {/* Submission Actions */}
+        <div className="flex items-center justify-end gap-3 border-t border-border pt-6">
           <Link
             href="/admin/cars"
-            className="px-5 py-2.5 rounded-btn border border-border bg-white text-text-primary font-semibold hover:bg-background-tertiary transition-colors"
+            className="h-11 px-5 rounded-btn border border-border bg-white text-text-primary text-xs font-semibold hover:bg-background-secondary transition-colors flex items-center"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={saving}
-            className="px-6 py-2.5 rounded-btn bg-action text-white font-semibold hover:bg-action-hover transition-colors shadow-sm disabled:opacity-50"
+            className="h-11 px-6 rounded-btn bg-action text-white text-xs font-semibold hover:bg-action-hover transition-colors disabled:opacity-50"
           >
-            {saving ? "Saving Vehicle..." : isEditing ? "Update Vehicle" : "Publish to Showroom Stock"}
+            {saving ? "Saving..." : isEditing ? "Save Changes" : "Publish Vehicle"}
           </button>
         </div>
       </form>

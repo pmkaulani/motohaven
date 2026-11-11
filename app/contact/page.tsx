@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { DEALERSHIP_CONFIG, buildGeneralWhatsAppUrl, isValidKenyanPhone } from "@/lib/config/dealership";
-import { MapPin, Phone, Mail, Clock, MessageCircle, CheckCircle2, AlertCircle } from "lucide-react";
+import { MessageCircle, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -52,126 +52,105 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="bg-background-secondary min-h-screen py-10 sm:py-16">
-      <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+    <div className="bg-white min-h-screen py-10 sm:py-16">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Breadcrumb & Header */}
-        <div className="max-w-3xl space-y-3">
+        <div className="max-w-2xl space-y-3">
           <div className="flex items-center gap-2 text-xs text-text-secondary">
-            <Link href="/" className="hover:text-action">
+            <Link href="/" className="hover:underline">
               Home
             </Link>
             <span>/</span>
-            <span className="text-text-primary font-medium">Contact</span>
+            <span className="text-text-primary">Contact</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-text-primary tracking-tight">
-            Contact MotoHaven Dealership
+            Contact MotoHaven
           </h1>
           <p className="text-base text-text-secondary leading-relaxed">
-            Reach our sales desk in Nairobi directly via WhatsApp, phone, or visit our Ngong Road showroom for vehicle inspections and test drives.
+            Reach our sales desk directly via WhatsApp, phone, or visit our Ngong Road showroom in Nairobi.
           </p>
         </div>
 
-        {/* Contact Grid: Details on Left, Form on Right */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Contact Grid: Details on Left, Form on Right (Unboxed, Anti-Card) */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start border-t border-border pt-10">
           {/* Details Column */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white p-6 sm:p-7 rounded-card border border-border shadow-sm space-y-6">
-              <h2 className="text-lg font-bold text-text-primary">
-                Showroom Coordinates
-              </h2>
+          <div className="md:col-span-5 space-y-6 text-sm">
+            <h2 className="text-lg font-bold text-text-primary">
+              Showroom Coordinates
+            </h2>
 
-              <div className="space-y-4 text-xs text-text-secondary">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded bg-background-secondary border border-border text-action shrink-0">
-                    <MapPin className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-text-primary">Physical Showroom</p>
-                    <p className="mt-0.5">{DEALERSHIP_CONFIG.address}</p>
-                    <p className="text-[11px] text-text-secondary/80 mt-1">
-                      Located along Ngong Road with secure on-site parking for customers.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded bg-background-secondary border border-border text-action shrink-0">
-                    <Clock className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-text-primary">Opening Hours</p>
-                    <p className="mt-0.5">Mon – Fri: {DEALERSHIP_CONFIG.hours.weekdays}</p>
-                    <p>Saturday: {DEALERSHIP_CONFIG.hours.saturday}</p>
-                    <p>Sunday: {DEALERSHIP_CONFIG.hours.sunday}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded bg-background-secondary border border-border text-action shrink-0">
-                    <Phone className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-text-primary">Telephone</p>
-                    <a
-                      href={`tel:${DEALERSHIP_CONFIG.phone.replace(/\s+/g, "")}`}
-                      className="text-action font-semibold hover:underline mt-0.5 block"
-                    >
-                      {DEALERSHIP_CONFIG.phone}
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded bg-background-secondary border border-border text-action shrink-0">
-                    <Mail className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-text-primary">Official Email</p>
-                    <a
-                      href={`mailto:${DEALERSHIP_CONFIG.email}`}
-                      className="text-text-secondary hover:underline mt-0.5 block"
-                    >
-                      {DEALERSHIP_CONFIG.email}
-                    </a>
-                  </div>
-                </div>
+            <div className="space-y-4 text-text-secondary">
+              <div>
+                <p className="font-semibold text-text-primary">Physical Showroom</p>
+                <p className="mt-0.5">{DEALERSHIP_CONFIG.address}</p>
               </div>
 
-              <div className="pt-4 border-t border-border">
-                <a
-                  href={buildGeneralWhatsAppUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 px-4 rounded-btn bg-brand-whatsapp text-white text-xs font-bold hover:bg-brand-whatsappHover transition-colors flex items-center justify-center gap-2 shadow-sm"
-                >
-                  <MessageCircle className="w-4 h-4 fill-current" />
-                  <span>Start WhatsApp Conversation</span>
-                </a>
+              <div>
+                <p className="font-semibold text-text-primary">Opening Hours</p>
+                <p className="mt-0.5">Mon – Fri: {DEALERSHIP_CONFIG.hours.weekdays}</p>
+                <p>Saturday: {DEALERSHIP_CONFIG.hours.saturday}</p>
+                <p>Sunday: {DEALERSHIP_CONFIG.hours.sunday}</p>
               </div>
+
+              <div>
+                <p className="font-semibold text-text-primary">Telephone</p>
+                <p className="mt-0.5">
+                  <a
+                    href={`tel:${DEALERSHIP_CONFIG.phone.replace(/\s+/g, "")}`}
+                    className="text-text-primary font-medium hover:underline"
+                  >
+                    {DEALERSHIP_CONFIG.phone}
+                  </a>
+                </p>
+              </div>
+
+              <div>
+                <p className="font-semibold text-text-primary">Email</p>
+                <p className="mt-0.5">
+                  <a
+                    href={`mailto:${DEALERSHIP_CONFIG.email}`}
+                    className="text-text-primary font-medium hover:underline"
+                  >
+                    {DEALERSHIP_CONFIG.email}
+                  </a>
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <a
+                href={buildGeneralWhatsAppUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-btn bg-brand-whatsapp text-white text-sm font-semibold hover:bg-brand-whatsappHover transition-colors"
+              >
+                <MessageCircle className="w-4 h-4 fill-current" />
+                <span>Chat on WhatsApp</span>
+              </a>
             </div>
           </div>
 
-          {/* Contact Message Form Column */}
-          <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-card border border-border shadow-sm">
+          {/* Contact Message Form Column (Clean Unboxed Form) */}
+          <div className="md:col-span-7 border-t md:border-t-0 md:border-l border-border pt-8 md:pt-0 md:pl-10">
             <h2 className="text-lg font-bold text-text-primary mb-1">
-              Send an Enquiry
+              Send a Message
             </h2>
-            <p className="text-xs text-text-secondary mb-6">
-              Looking for a specific model, trade-in enquiry, or financing consultation? Fill out the form below and our team will get back to you promptly.
+            <p className="text-sm text-text-secondary mb-6">
+              Have questions about a vehicle, trade-in, or viewing? Fill out the form below.
             </p>
 
             {submitted ? (
-              <div className="py-10 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-6 h-6" />
+              <div className="py-8 space-y-3">
+                <div className="flex items-center gap-2 text-emerald-700">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <h3 className="text-base font-bold text-text-primary">
+                    Message Sent Successfully
+                  </h3>
                 </div>
-                <h3 className="text-lg font-bold text-text-primary">
-                  Enquiry Submitted Successfully
-                </h3>
-                <p className="text-xs text-text-secondary max-w-sm mx-auto">
+                <p className="text-sm text-text-secondary">
                   Thank you for reaching out. A MotoHaven sales representative will contact you via phone or WhatsApp shortly.
                 </p>
-                <div className="pt-4">
+                <div className="pt-2">
                   <button
                     type="button"
                     onClick={() => {
@@ -181,23 +160,23 @@ export default function ContactPage() {
                       setEmail("");
                       setMessage("");
                     }}
-                    className="px-5 py-2 text-xs font-semibold bg-action text-white rounded-btn hover:bg-action-hover"
+                    className="text-xs font-semibold text-text-primary underline hover:no-underline"
                   >
                     Send another message
                   </button>
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+              <form onSubmit={handleSubmit} className="space-y-4 text-sm">
                 {errorMsg && (
-                  <div className="p-3 rounded bg-red-50 border border-red-200 text-red-700 flex items-center gap-2">
+                  <div className="p-3 rounded bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{errorMsg}</span>
                   </div>
                 )}
 
                 <div>
-                  <label className="block font-semibold text-text-primary mb-1">
+                  <label className="block text-xs font-semibold text-text-primary mb-1.5">
                     Your Full Name <span className="text-red-600">*</span>
                   </label>
                   <input
@@ -206,13 +185,13 @@ export default function ContactPage() {
                     placeholder="e.g. Kenneth Otieno"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
+                    className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-semibold text-text-primary mb-1">
+                    <label className="block text-xs font-semibold text-text-primary mb-1.5">
                       Phone Number <span className="text-red-600">*</span>
                     </label>
                     <input
@@ -221,11 +200,11 @@ export default function ContactPage() {
                       placeholder="e.g. 0712 345678"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
+                      className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold text-text-primary mb-1">
+                    <label className="block text-xs font-semibold text-text-primary mb-1.5">
                       Email Address <span className="text-text-secondary font-normal">(Optional)</span>
                     </label>
                     <input
@@ -233,22 +212,22 @@ export default function ContactPage() {
                       placeholder="e.g. name@gmail.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
+                      className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-text-primary mb-1">
-                    Message or Enquiry Details <span className="text-red-600">*</span>
+                  <label className="block text-xs font-semibold text-text-primary mb-1.5">
+                    Message <span className="text-red-600">*</span>
                   </label>
                   <textarea
                     rows={4}
                     required
-                    placeholder="Please specify what car you are interested in, your budget, or any questions regarding financing / trade-in."
+                    placeholder="Tell us what car you are interested in or any questions regarding viewing."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    className="w-full p-2.5 bg-background-secondary rounded-btn border border-border focus:bg-white focus:border-action focus:outline-none"
+                    className="w-full p-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
                   />
                 </div>
 
@@ -256,9 +235,9 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full sm:w-auto px-8 py-3 rounded-btn bg-action text-white text-xs font-semibold hover:bg-action-hover transition-colors disabled:opacity-50"
+                    className="w-full sm:w-auto h-11 px-6 rounded-btn bg-action text-white text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50"
                   >
-                    {submitting ? "Sending..." : "Submit Message to MotoHaven"}
+                    {submitting ? "Sending..." : "Submit Message"}
                   </button>
                 </div>
               </form>

@@ -18,38 +18,30 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* Hero */}
+      {/* 1. Hero */}
       <Hero
         heroImageUrl={heroVehicle?.cover_photo || heroVehicle?.photo_urls[0]}
         heroVehicleTitle={heroVehicle ? `${heroVehicle.year} ${heroVehicle.brand} ${heroVehicle.model}` : undefined}
-        heroVehiclePrice={heroVehicle ? `KSh ${heroVehicle.price.toLocaleString("en-KE")}` : undefined}
-        heroVehicleSlug={heroVehicle?.slug}
       />
 
-      {/* Quick Search */}
+      {/* 2. Compact Search */}
       <QuickSearch />
 
-      {/* Popular Categories */}
-      <PopularCategories />
-
-      {/* Available Vehicles Section */}
-      <section className="py-12 lg:py-16 bg-white border-b border-border">
-        <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+      {/* 3. Available Vehicles Section */}
+      <section className="py-12 sm:py-16 bg-white border-b border-border">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-8">
             <div>
-              <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                Current Showroom Stock
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight mt-1">
+              <h2 className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">
                 Available Vehicles
               </h2>
-              <p className="text-xs sm:text-sm text-text-secondary mt-1">
-                Inspected vehicles on site in Nairobi. Real photos, real prices.
+              <p className="text-sm text-text-secondary mt-1">
+                Inspected vehicles currently in stock at our Nairobi showroom.
               </p>
             </div>
             <Link
               href="/cars"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-action hover:underline self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-text-primary hover:underline"
             >
               <span>View all inventory ({result.total})</span>
               <ArrowRight className="w-4 h-4" />
@@ -62,7 +54,7 @@ export default function HomePage() {
               <p className="text-base font-semibold text-text-primary">
                 No vehicles currently listed
               </p>
-              <p className="text-xs text-text-secondary mt-1 max-w-sm mx-auto">
+              <p className="text-sm text-text-secondary mt-1 max-w-sm mx-auto">
                 Check back shortly as new inspected stock arrives, or contact our sales team directly for specific orders.
               </p>
             </div>
@@ -73,24 +65,16 @@ export default function HomePage() {
               ))}
             </div>
           )}
-
-          {/* Bottom browse button */}
-          <div className="mt-10 text-center">
-            <Link
-              href="/cars"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-btn bg-background-secondary text-text-primary text-sm font-semibold border border-border hover:bg-background-tertiary transition-colors shadow-sm"
-            >
-              <span>Browse All {result.total} Vehicles</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* Why MotoHaven */}
+      {/* 4. Browse by body type (Text-led links, Anti-Card) */}
+      <PopularCategories />
+
+      {/* 5. Why MotoHaven (3 unboxed text columns) */}
       <WhyMotoHaven />
 
-      {/* Dealership Info & Location */}
+      {/* 6. Dealership Information & Coordinates */}
       <DealershipInfo />
     </div>
   );
