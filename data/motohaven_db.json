@@ -25,9 +25,9 @@
       "stock_reference": "MH-2018-HARRIER",
       "status": "Available",
       "photo_urls": [
-        "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1200&auto=format&fit=crop&q=80"
+        "https://upload.wikimedia.org/wikipedia/commons/1/1f/2017-2020_Toyota_Harrier_Hybrid_Premium.jpg"
       ],
-      "cover_photo": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1200&auto=format&fit=crop&q=80",
+      "cover_photo": "https://upload.wikimedia.org/wikipedia/commons/1/1f/2017-2020_Toyota_Harrier_Hybrid_Premium.jpg",
       "location": "Nairobi Showroom",
       "id": "veh-1794429681065-5jdja",
       "slug": "toyota-harrier-2018-jdja",
@@ -64,9 +64,9 @@
       "status": "Available",
       "sold": false,
       "photo_urls": [
-        "https://dfswwtrwoyqzirmyeqht.supabase.co/storage/v1/object/public/car-photos/1794243666938-oqapywixu6.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/a/a4/2008-2009_BMW_320i_%28E90%29_sedan_01.jpg"
       ],
-      "cover_photo": "https://dfswwtrwoyqzirmyeqht.supabase.co/storage/v1/object/public/car-photos/1794243666938-oqapywixu6.jpg",
+      "cover_photo": "https://upload.wikimedia.org/wikipedia/commons/a/a4/2008-2009_BMW_320i_%28E90%29_sedan_01.jpg",
       "created_at": "2026-11-09T17:01:08.531Z"
     },
     {
@@ -100,11 +100,10 @@
       "status": "Available",
       "sold": false,
       "photo_urls": [
-        "https://dfswwtrwoyqzirmyeqht.supabase.co/storage/v1/object/public/car-photos/1794248603531-pr17p468u49.jpg",
-        "https://dfswwtrwoyqzirmyeqht.supabase.co/storage/v1/object/public/car-photos/1794248605282-9n2h6o6rcse.jpg",
-        "https://dfswwtrwoyqzirmyeqht.supabase.co/storage/v1/object/public/car-photos/1794248606050-p59rjdg89c.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/8/8a/BMW_F90_M5_Competition_%2847090285514%29.jpg",
+        "https://dfswwtrwoyqzirmyeqht.supabase.co/storage/v1/object/public/car-photos/1794248603531-pr17p468u49.jpg"
       ],
-      "cover_photo": "https://dfswwtrwoyqzirmyeqht.supabase.co/storage/v1/object/public/car-photos/1794248603531-pr17p468u49.jpg",
+      "cover_photo": "https://upload.wikimedia.org/wikipedia/commons/8/8a/BMW_F90_M5_Competition_%2847090285514%29.jpg",
       "created_at": "2026-11-09T18:23:27.863Z"
     },
     {
@@ -138,10 +137,9 @@
       "status": "Available",
       "sold": false,
       "photo_urls": [
-        "https://images.unsplash.com/photo-1594502184342-2e12f877aa73?w=1200&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1200&auto=format&fit=crop&q=80"
+        "https://images.unsplash.com/photo-1650530579355-7ad9d4766043?w=1200&auto=format&fit=crop&q=80"
       ],
-      "cover_photo": "https://images.unsplash.com/photo-1594502184342-2e12f877aa73?w=1200&auto=format&fit=crop&q=80",
+      "cover_photo": "https://images.unsplash.com/photo-1650530579355-7ad9d4766043?w=1200&auto=format&fit=crop&q=80",
       "created_at": "2026-11-10T09:15:00.000Z"
     },
     {
@@ -174,9 +172,9 @@
       "status": "Available",
       "sold": false,
       "photo_urls": [
-        "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1200&auto=format&fit=crop&q=80"
+        "https://images.unsplash.com/photo-1643142310832-2bcc7d4688b2?w=1200&auto=format&fit=crop&q=80"
       ],
-      "cover_photo": "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1200&auto=format&fit=crop&q=80",
+      "cover_photo": "https://images.unsplash.com/photo-1643142310832-2bcc7d4688b2?w=1200&auto=format&fit=crop&q=80",
       "created_at": "2026-11-10T11:30:00.000Z"
     },
     {
@@ -209,9 +207,10 @@
       "status": "Available",
       "sold": false,
       "photo_urls": [
-        "https://images.unsplash.com/photo-1563720223185-11003d516935?w=1200&auto=format&fit=crop&q=80"
+        "https://upload.wikimedia.org/wikipedia/commons/8/87/2015-2017_Subaru_Outback_%28BS9%29_2.5i-S_wagon_%282017-11-29%29_01.jpg",
+        "https://upload.wikimedia.org/wikipedia/commons/3/37/2015-2017_Subaru_Outback_%28BS9%29_2.5i_Premium_station_wagon_%282018-02-22%29_02.jpg"
       ],
-      "cover_photo": "https://images.unsplash.com/photo-1563720223185-11003d516935?w=1200&auto=format&fit=crop&q=80",
+      "cover_photo": "https://upload.wikimedia.org/wikipedia/commons/8/87/2015-2017_Subaru_Outback_%28BS9%29_2.5i-S_wagon_%282017-11-29%29_01.jpg",
       "created_at": "2026-11-10T14:00:00.000Z"
     },
     {
@@ -244,9 +243,10 @@
       "status": "Available",
       "sold": false,
       "photo_urls": [
-        "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=1200&auto=format&fit=crop&q=80"
+        "https://images.unsplash.com/photo-1604755940678-ffbf0c1fcc37?w=1200&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1584936874883-7fedea1f7d96?w=1200&auto=format&fit=crop&q=80"
       ],
-      "cover_photo": "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=1200&auto=format&fit=crop&q=80",
+      "cover_photo": "https://images.unsplash.com/photo-1604755940678-ffbf0c1fcc37?w=1200&auto=format&fit=crop&q=80",
       "created_at": "2026-11-11T08:20:00.000Z"
     }
   ],
