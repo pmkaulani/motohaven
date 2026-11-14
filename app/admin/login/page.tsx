@@ -3,7 +3,7 @@
 import React, { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Shield, Lock, Mail, AlertCircle, ArrowRight } from "lucide-react";
+import { Lock, Mail, AlertCircle, ArrowRight } from "lucide-react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -52,9 +52,6 @@ export default function AdminLoginPage() {
 
         <div className="bg-white border border-border p-6 sm:p-8 w-full shadow-sm space-y-6">
           <div className="text-center space-y-1.5">
-            <div className="w-10 h-10 rounded-full bg-background-secondary border border-border flex items-center justify-center mx-auto text-text-primary mb-2">
-              <Shield className="w-5 h-5" />
-            </div>
             <h1 className="text-xl font-bold text-text-primary tracking-tight">
               Staff Portal Sign In
             </h1>
