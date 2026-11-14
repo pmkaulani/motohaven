@@ -7,8 +7,9 @@
   --foreground: #292C2E;
   --secondary: #F6F6F5;
   --tertiary: #F0F1F1;
-  --muted: #73787A;
+  --muted: #686D6F;
   --border: #E2E4E5;
+  --field-border: #898E90;
 }
 
 body {
@@ -17,6 +18,25 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Global focus-visible indicator (WCAG 2.1 AA 2.4.7 compliant) */
+:focus-visible {
+  outline: 2px solid #292C2E !important;
+  outline-offset: 2px !important;
+}
+
+/* Prevent auto-zoom on mobile iOS by ensuring 16px font-size on text inputs */
+@media (max-width: 640px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="number"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* Custom scrollbar styling for drawers and galleries */

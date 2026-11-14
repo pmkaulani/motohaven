@@ -1,18 +1,45 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useId } from "react";
 import { useRouter } from "next/navigation";
-import { Vehicle } from "@/types/vehicle";
-import { Upload, X, Star, AlertCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { Vehicle, VehicleProofRecords } from "@/types/vehicle";
+import { Upload, X, Star, ArrowLeft, AlertCircle, Save } from "lucide-react";
 
-interface VehicleFormProps {
-  initialVehicle?: Vehicle;
+interface Props {
+  initialVehicle?: Vehicle | null;
   isEditing?: boolean;
 }
 
-export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormProps) {
+export function VehicleForm({ initialVehicle, isEditing = false }: Props) {
   const router = useRouter();
+
+  // Unique IDs for accessibility
+  const brandId = useId();
+  const modelId = useId();
+  const trimId = useId();
+  const yearId = useId();
+  const priceId = useId();
+  const mileageId = useId();
+  const engineCcId = useId();
+  const conditionId = useId();
+  const transmissionId = useId();
+  const fuelId = useId();
+  const bodyTypeId = useId();
+  const drivetrainId = useId();
+  const originId = useId();
+  const stockRefId = useId();
+  const statusId = useId();
+  const descriptionId = useId();
+  const featuresId = useId();
+  const fileInputId = useId();
+
+  // Proof records IDs
+  const mileageSourceId = useId();
+  const exportSheetId = useId();
+  const chassisStatusId = useId();
+  const logbookStatusId = useId();
+  const dutyStatusId = useId();
 
   const [brand, setBrand] = useState(initialVehicle?.brand || "");
   const [model, setModel] = useState(initialVehicle?.model || "");
@@ -31,6 +58,13 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
   const [status, setStatus] = useState(initialVehicle?.status || "Available");
   const [description, setDescription] = useState(initialVehicle?.description || "");
   const [featuresInput, setFeaturesInput] = useState(initialVehicle?.features?.join(", ") || "");
+
+  // Proof / Paperwork records
+  const [mileageSource, setMileageSource] = useState(initialVehicle?.proof_records?.mileage_source || "Recorded at showroom check");
+  const [exportSheetStatus, setExportSheetStatus] = useState(initialVehicle?.proof_records?.export_sheet_status || "Provided");
+  const [chassisCheckStatus, setChassisCheckStatus] = useState(initialVehicle?.proof_records?.chassis_check_status || "Staff checked");
+  const [logbookStatus, setLogbookStatus] = useState(initialVehicle?.proof_records?.logbook_status || "Available at showroom");
+  const [dutyStatus, setDutyStatus] = useState(initialVehicle?.proof_records?.duty_status || "Fully paid / duty cleared");
 
   const [photoUrls, setPhotoUrls] = useState<string[]>(initialVehicle?.photo_urls || []);
   const [coverPhoto, setCoverPhoto] = useState<string>(initialVehicle?.cover_photo || initialVehicle?.photo_urls?.[0] || "");
@@ -97,6 +131,14 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
       .map((f) => f.trim())
       .filter(Boolean);
 
+    const proof_records: VehicleProofRecords = {
+      mileage_source: mileageSource || undefined,
+      export_sheet_status: exportSheetStatus as any,
+      chassis_check_status: chassisCheckStatus as any,
+      logbook_status: logbookStatus as any,
+      duty_status: dutyStatus as any,
+    };
+
     const payload = {
       brand: brand.trim(),
       model: model.trim(),
@@ -117,6 +159,7 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
       features,
       photo_urls: photoUrls.length > 0 ? photoUrls : ["/images/car-placeholder.jpg"],
       cover_photo: coverPhoto || photoUrls[0] || "/images/car-placeholder.jpg",
+      proof_records,
     };
 
     try {
@@ -149,121 +192,125 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
       <div className="flex items-center gap-3 border-b border-border pb-4">
         <Link
           href="/admin/cars"
-          className="p-2 rounded-btn border border-border bg-white text-text-secondary hover:text-text-primary"
+          className="p-2 text-text-secondary hover:text-text-primary rounded-btn transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
+          aria-label="Back to inventory"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">
-            {isEditing ? `Edit ${initialVehicle?.year} ${initialVehicle?.brand} ${initialVehicle?.model}` : "Add Vehicle to Inventory"}
+          <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight">
+            {isEditing ? `Edit: ${initialVehicle?.brand} ${initialVehicle?.model}` : "Add Vehicle to Inventory"}
           </h1>
-          <p className="text-xs text-text-secondary mt-0.5">
-            Fill in vehicle specifications and genuine showroom photographs.
+          <p className="text-xs text-text-secondary">
+            Nairobi showroom physical inventory record.
           </p>
         </div>
       </div>
 
       {errorMsg && (
-        <div className="p-3.5 rounded bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+        <div role="alert" className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
 
-      {/* Form with clean sections, unboxed, separated by subtle dividers */}
       <form onSubmit={handleSubmit} className="space-y-8 text-sm">
-        {/* Section 1: Vehicle Details */}
+        {/* Section 1: Core Details */}
         <div className="space-y-4">
-          <h2 className="text-base font-bold text-text-primary">
+          <h2 className="text-base font-bold text-text-primary border-b border-border pb-2">
             Vehicle details
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
-                Make <span className="text-red-600">*</span>
+              <label htmlFor={brandId} className="block text-xs font-semibold text-text-primary mb-1">
+                Make / Brand <span className="text-red-500">*</span>
               </label>
               <input
+                id={brandId}
                 type="text"
                 required
-                placeholder="e.g. Toyota, BMW, Mazda"
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+                placeholder="e.g. Toyota, BMW, Mazda"
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
-                Model <span className="text-red-600">*</span>
+              <label htmlFor={modelId} className="block text-xs font-semibold text-text-primary mb-1">
+                Model <span className="text-red-500">*</span>
               </label>
               <input
+                id={modelId}
                 type="text"
                 required
-                placeholder="e.g. Prado, 320i, CX-5"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+                placeholder="e.g. Prado TX, 320i, CX-5"
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
-                Trim / Grade
+              <label htmlFor={trimId} className="block text-xs font-semibold text-text-primary mb-1">
+                Trim / Variant
               </label>
               <input
+                id={trimId}
                 type="text"
-                placeholder="e.g. TX, M Sport, Limited"
                 value={trim}
                 onChange={(e) => setTrim(e.target.value)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+                placeholder="e.g. TX-L Package, M Sport"
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
-                Year of Manufacture <span className="text-red-600">*</span>
+              <label htmlFor={yearId} className="block text-xs font-semibold text-text-primary mb-1">
+                Year of Manufacture <span className="text-red-500">*</span>
               </label>
               <input
+                id={yearId}
                 type="number"
                 required
-                min="1990"
-                max="2030"
+                min={1980}
+                max={2030}
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
-                Selling Price (KSh) <span className="text-red-600">*</span>
+              <label htmlFor={priceId} className="block text-xs font-semibold text-text-primary mb-1">
+                Price (KSh) <span className="text-red-500">*</span>
               </label>
               <input
+                id={priceId}
                 type="number"
                 required
-                min="100000"
-                placeholder="e.g. 3500000"
+                min={0}
+                step={50000}
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+                placeholder="e.g. 4500000"
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
-                Mileage (km) <span className="text-red-600">*</span>
+              <label htmlFor={mileageId} className="block text-xs font-semibold text-text-primary mb-1">
+                Mileage (km)
               </label>
               <input
+                id={mileageId}
                 type="number"
-                required
-                min="0"
-                placeholder="e.g. 58000"
+                min={0}
                 value={mileage}
                 onChange={(e) => setMileage(e.target.value)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+                placeholder="e.g. 68000"
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               />
             </div>
           </div>
@@ -277,28 +324,30 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
+              <label htmlFor={conditionId} className="block text-xs font-semibold text-text-primary mb-1">
                 Condition
               </label>
               <select
+                id={conditionId}
                 value={condition}
                 onChange={(e) => setCondition(e.target.value as any)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               >
-                <option value="Foreign Used">Foreign Used (Import)</option>
-                <option value="Locally Used">Locally Used (Kenyan)</option>
+                <option value="Foreign Used">Foreign Used</option>
+                <option value="Locally Used">Locally Used</option>
                 <option value="Brand New">Brand New</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
+              <label htmlFor={transmissionId} className="block text-xs font-semibold text-text-primary mb-1">
                 Transmission
               </label>
               <select
+                id={transmissionId}
                 value={transmission}
                 onChange={(e) => setTransmission(e.target.value as any)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               >
                 <option value="Automatic">Automatic</option>
                 <option value="Manual">Manual</option>
@@ -306,13 +355,14 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
+              <label htmlFor={fuelId} className="block text-xs font-semibold text-text-primary mb-1">
                 Fuel Type
               </label>
               <select
+                id={fuelId}
                 value={fuel}
                 onChange={(e) => setFuel(e.target.value as any)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               >
                 <option value="Petrol">Petrol</option>
                 <option value="Diesel">Diesel</option>
@@ -320,31 +370,18 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
                 <option value="Electric">Electric</option>
               </select>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
-                Engine (cc)
-              </label>
-              <input
-                type="number"
-                value={engineCc}
-                onChange={(e) => setEngineCc(e.target.value)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
-              />
-            </div>
 
             <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
+              <label htmlFor={bodyTypeId} className="block text-xs font-semibold text-text-primary mb-1">
                 Body Type
               </label>
               <select
+                id={bodyTypeId}
                 value={bodyType}
                 onChange={(e) => setBodyType(e.target.value as any)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               >
-                <option value="SUV">SUV</option>
+                <option value="SUV">SUV & 4x4</option>
                 <option value="Saloon">Saloon</option>
                 <option value="Station Wagon">Station Wagon</option>
                 <option value="Hatchback">Hatchback</option>
@@ -353,34 +390,130 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
-                Drivetrain
+              <label htmlFor={engineCcId} className="block text-xs font-semibold text-text-primary mb-1">
+                Engine Capacity (cc)
               </label>
               <input
-                type="text"
-                placeholder="e.g. 4WD, AWD, RWD"
-                value={drivetrain}
-                onChange={(e) => setDrivetrain(e.target.value)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
+                id={engineCcId}
+                type="number"
+                value={engineCc}
+                onChange={(e) => setEngineCc(e.target.value)}
+                placeholder="2000"
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-text-primary mb-1.5">
-                Stock Reference
+              <label htmlFor={statusId} className="block text-xs font-semibold text-text-primary mb-1">
+                Listing Status
               </label>
-              <input
-                type="text"
-                placeholder="e.g. MH-2018-CX5"
-                value={stockReference}
-                onChange={(e) => setStockReference(e.target.value)}
-                className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
-              />
+              <select
+                id={statusId}
+                value={status}
+                onChange={(e) => setStatus(e.target.value as any)}
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
+              >
+                <option value="Available">Available (Live)</option>
+                <option value="Reserved">Reserved</option>
+                <option value="Sold">Sold</option>
+                <option value="Draft">Draft (Hidden)</option>
+                <option value="Archived">Archived (Hidden)</option>
+              </select>
             </div>
           </div>
         </div>
 
-        {/* Section 3: Photographs */}
+        {/* Section 3: Verification & Paperwork (Finding 13) */}
+        <div className="space-y-4 border-t border-border pt-6">
+          <h2 className="text-base font-bold text-text-primary">
+            Verification & Paperwork records
+          </h2>
+          <p className="text-xs text-text-secondary">
+            Record honest showroom evidence. Only stated facts will be displayed to customers.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor={mileageSourceId} className="block text-xs font-semibold text-text-primary mb-1">
+                Odometer / Mileage Source
+              </label>
+              <input
+                id={mileageSourceId}
+                type="text"
+                value={mileageSource}
+                onChange={(e) => setMileageSource(e.target.value)}
+                placeholder="e.g. Export inspection certificate / JEVIC"
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
+              />
+            </div>
+
+            <div>
+              <label htmlFor={exportSheetId} className="block text-xs font-semibold text-text-primary mb-1">
+                Export / Auction Sheet Status
+              </label>
+              <select
+                id={exportSheetId}
+                value={exportSheetStatus}
+                onChange={(e) => setExportSheetStatus(e.target.value as any)}
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
+              >
+                <option value="Provided">Provided</option>
+                <option value="Not supplied">Not supplied</option>
+                <option value="Not applicable">Not applicable</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor={chassisStatusId} className="block text-xs font-semibold text-text-primary mb-1">
+                Chassis / VIN Check
+              </label>
+              <select
+                id={chassisStatusId}
+                value={chassisCheckStatus}
+                onChange={(e) => setChassisCheckStatus(e.target.value as any)}
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
+              >
+                <option value="Staff checked">Staff checked</option>
+                <option value="Not checked">Not checked</option>
+                <option value="Not supplied">Not supplied</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor={logbookStatusId} className="block text-xs font-semibold text-text-primary mb-1">
+                Logbook Status
+              </label>
+              <select
+                id={logbookStatusId}
+                value={logbookStatus}
+                onChange={(e) => setLogbookStatus(e.target.value as any)}
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
+              >
+                <option value="Available at showroom">Available at showroom</option>
+                <option value="In processing">In processing</option>
+                <option value="Duty cleared, awaiting transfer">Duty cleared, awaiting transfer</option>
+              </select>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor={dutyStatusId} className="block text-xs font-semibold text-text-primary mb-1">
+                Duty / Import Status
+              </label>
+              <select
+                id={dutyStatusId}
+                value={dutyStatus}
+                onChange={(e) => setDutyStatus(e.target.value as any)}
+                className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
+              >
+                <option value="Fully paid / duty cleared">Fully paid / duty cleared</option>
+                <option value="In bond / subject to duty">In bond / subject to duty</option>
+                <option value="Locally registered">Locally registered</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 4: Photographs */}
         <div className="space-y-4 border-t border-border pt-6">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-text-primary">
@@ -391,22 +524,23 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
             </span>
           </div>
 
-          <div className="border border-border rounded-btn p-5 text-center bg-background-secondary/50">
+          <div className="border border-border p-5 text-center bg-background-secondary">
+            {/* Keyboard-accessible file input (sr-only, not display:none; Fixes Finding 9) */}
             <input
               type="file"
               multiple
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               onChange={handleFileUpload}
               disabled={uploading}
-              className="hidden"
-              id="photo-file-input"
+              className="sr-only"
+              id={fileInputId}
             />
             <label
-              htmlFor="photo-file-input"
-              className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-btn bg-white border border-border text-xs font-semibold text-text-primary hover:bg-background-secondary"
+              htmlFor={fileInputId}
+              className="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-field text-xs font-semibold text-text-primary hover:bg-background-secondary focus-within:ring-2 focus-within:ring-text-primary min-h-[44px]"
             >
-              <Upload className="w-4 h-4 text-action" />
-              <span>{uploading ? "Uploading..." : "Upload Showroom Photos"}</span>
+              <Upload className="w-4 h-4 text-text-primary" />
+              <span>{uploading ? "Uploading..." : "Upload Showroom Photographs (JPEG, PNG, WebP)"}</span>
             </label>
           </div>
 
@@ -417,24 +551,26 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
                 return (
                   <div
                     key={index}
-                    className={`relative rounded overflow-hidden border aspect-[4/3] group ${
-                      isCover ? "border-text-primary ring-1 ring-text-primary" : "border-border"
+                    className={`relative overflow-hidden border aspect-[4/3] group ${
+                      isCover ? "border-text-primary ring-2 ring-text-primary" : "border-border"
                     }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={url}
-                      alt={`Photo ${index + 1}`}
+                      alt={`Vehicle photograph ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
 
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-1">
+                    {/* Touch-first photo controls: visible on mobile phones, hover/focus on desktop (Fixes Finding 10 & 15) */}
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 p-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 group-focus-within:opacity-100">
                       {index > 0 && (
                         <button
                           type="button"
                           onClick={() => movePhotoLeft(index)}
-                          className="p-1 rounded bg-white text-text-primary text-xs"
+                          className="p-1.5 bg-white text-text-primary text-xs min-w-[36px] min-h-[36px] flex items-center justify-center font-bold"
                           title="Move left"
+                          aria-label={`Move photo ${index + 1} left`}
                         >
                           ←
                         </button>
@@ -442,28 +578,24 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
                       <button
                         type="button"
                         onClick={() => setCoverPhoto(url)}
-                        className={`p-1 rounded text-xs ${
+                        className={`p-1.5 text-xs min-w-[36px] min-h-[36px] flex items-center justify-center ${
                           isCover ? "bg-emerald-600 text-white" : "bg-white text-text-primary"
                         }`}
                         title="Set Cover"
+                        aria-label={`Set photo ${index + 1} as cover photograph`}
                       >
-                        <Star className="w-3.5 h-3.5 fill-current" />
+                        <Star className="w-4 h-4 fill-current" />
                       </button>
                       <button
                         type="button"
                         onClick={() => removePhoto(url)}
-                        className="p-1 rounded bg-red-600 text-white text-xs"
+                        className="p-1.5 bg-red-600 text-white text-xs min-w-[36px] min-h-[36px] flex items-center justify-center"
                         title="Remove"
+                        aria-label={`Remove photo ${index + 1}`}
                       >
-                        <X className="w-3.5 h-3.5" />
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
-
-                    {isCover && (
-                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/70 text-white text-[10px] font-semibold">
-                        COVER
-                      </span>
-                    )}
                   </div>
                 );
               })}
@@ -471,70 +603,56 @@ export function VehicleForm({ initialVehicle, isEditing = false }: VehicleFormPr
           )}
         </div>
 
-        {/* Section 4: Description & Status */}
+        {/* Section 5: Description & Features */}
         <div className="space-y-4 border-t border-border pt-6">
           <h2 className="text-base font-bold text-text-primary">
-            Description & Status
+            Description and Features
           </h2>
 
           <div>
-            <label className="block text-xs font-semibold text-text-primary mb-1.5">
+            <label htmlFor={descriptionId} className="block text-xs font-semibold text-text-primary mb-1">
               Vehicle Description
             </label>
             <textarea
+              id={descriptionId}
               rows={4}
-              placeholder="Describe condition, history, and key equipment."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+              placeholder="Factual notes on showroom vehicle condition, import history, recent servicing..."
+              className="w-full p-3 bg-white border border-field text-text-primary focus:border-text-primary"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-primary mb-1.5">
-              Key Features (comma-separated)
+            <label htmlFor={featuresId} className="block text-xs font-semibold text-text-primary mb-1">
+              Features (comma separated)
             </label>
             <input
+              id={featuresId}
               type="text"
-              placeholder="e.g. Sunroof, Leather Seats, 360 Camera, Alloy Wheels"
               value={featuresInput}
               onChange={(e) => setFeaturesInput(e.target.value)}
-              className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+              placeholder="Leather seats, Sunroof, Reverse Camera, 360 View"
+              className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
             />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-text-primary mb-1.5">
-              Inventory Status
-            </label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as any)}
-              className="w-full sm:w-64 h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
-            >
-              <option value="Available">Available (Visible in showroom)</option>
-              <option value="Reserved">Reserved (Deposit taken)</option>
-              <option value="Sold">Sold (Marked sold)</option>
-              <option value="Draft">Draft (Internal)</option>
-              <option value="Archived">Archived (Hidden)</option>
-            </select>
           </div>
         </div>
 
-        {/* Submission Actions */}
-        <div className="flex items-center justify-end gap-3 border-t border-border pt-6">
+        {/* Submit Actions */}
+        <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
           <Link
             href="/admin/cars"
-            className="h-11 px-5 rounded-btn border border-border bg-white text-text-primary text-xs font-semibold hover:bg-background-secondary transition-colors flex items-center"
+            className="px-5 py-2.5 border border-field text-text-secondary hover:text-text-primary text-xs font-semibold min-h-[44px] flex items-center"
           >
             Cancel
           </Link>
           <button
             type="submit"
-            disabled={saving}
-            className="h-11 px-6 rounded-btn bg-action text-white text-xs font-semibold hover:bg-action-hover transition-colors disabled:opacity-50"
+            disabled={saving || uploading}
+            className="px-6 py-2.5 bg-action text-white text-xs font-semibold hover:bg-action-hover transition-colors flex items-center gap-2 disabled:opacity-50 min-h-[44px]"
           >
-            {saving ? "Saving..." : isEditing ? "Save Changes" : "Publish Vehicle"}
+            <Save className="w-4 h-4" />
+            <span>{saving ? "Saving Record..." : isEditing ? "Update Vehicle Record" : "Save and Publish"}</span>
           </button>
         </div>
       </form>

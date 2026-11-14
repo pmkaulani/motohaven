@@ -1,4 +1,11 @@
-export type EnquiryType = "viewing" | "test_drive" | "general";
+export type EnquiryType =
+  | "viewing"
+  | "test_drive"
+  | "general"
+  | "Viewing"
+  | "Test Drive"
+  | "General Question";
+
 export type EnquiryStatus = "New" | "Contacted" | "Viewing scheduled" | "Completed" | "Closed";
 
 export interface Enquiry {
@@ -12,6 +19,7 @@ export interface Enquiry {
   vehicle_price?: number;
   enquiry_type: EnquiryType;
   preferred_date?: string;
+  preferred_time?: string;
   message?: string;
   status: EnquiryStatus;
   notes?: string;
@@ -26,5 +34,6 @@ export interface CreateEnquiryInput {
   vehicle_price?: number;
   enquiry_type: EnquiryType;
   preferred_date?: string;
+  preferred_time?: string;
   message?: string;
 }

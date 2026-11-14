@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { LocalDB } from "@/lib/db/local-db";
+import { VehiclesRepository } from "@/lib/repositories/vehicles";
+import { requireStaff, handleAuthError } from "@/lib/auth/guards";
+import { VehicleCondition, Transmission, FuelType, VehicleStatus, BodyType } from "@/types/vehicle";
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,7 +20,7 @@ export async function GET(req: NextRequest) {
     const page = searchParams.get("page") ? Number(searchParams.get("page")) : 1;
     const limit = searchParams.get("limit") ? Number(searchParams.get("limit")) : 12;
 
-    const data = LocalDB.getVehicles({
+    const data = await VehiclesRepository.getPublishedVehicles({
       q,
       brand,
       body_type,
@@ -43,6 +45,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Guard endpoint: staff only
+    requireStaff(req);
+
+    // 2. Validate input
     const body = await req.json();
     const {
       brand,
@@ -65,6 +71,7 @@ export async function POST(req: NextRequest) {
       photo_urls,
       cover_photo,
       location,
+      proof_records,
     } = body;
 
     if (!brand || !model || !year || !price) {
@@ -74,31 +81,48 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const vehicle = LocalDB.createVehicle({
-      brand,
-      model,
-      trim,
-      year: Number(year),
-      price: Number(price),
-      condition: condition || "Foreign Used",
-      engine_cc: Number(engine_cc) || 2000,
-      transmission: transmission || "Automatic",
-      fuel: fuel || "Petrol",
-      mileage: Number(mileage) || 0,
-      body_type: body_type || "Saloon",
-      drivetrain,
-      origin,
-      description,
-      features: features || [],
-      stock_reference,
-      status: status || "Available",
-      photo_urls: photo_urls && photo_urls.length > 0 ? photo_urls : ["/images/car-placeholder.jpg"],
-      cover_photo: cover_photo || (photo_urls ? photo_urls[0] : ""),
+    const numYear = Number(year);
+    const numPrice = Number(price);
+    const numMileage = Number(mileage) || 0;
+    const numEngineCc = Number(engine_cc) || 2000;
+
+    if (isNaN(numYear) || numYear < 1980 || numYear > new Date().getFullYear() + 2) {
+      return NextResponse.json({ error: "Invalid vehicle year." }, { status: 400 });
+    }
+
+    if (isNaN(numPrice) || numPrice <= 0) {
+      return NextResponse.json({ error: "Invalid vehicle price." }, { status: 400 });
+    }
+
+    const vehicle = await VehiclesRepository.createVehicle({
+      brand: String(brand).trim(),
+      model: String(model).trim(),
+      trim: trim ? String(trim).trim() : undefined,
+      year: numYear,
+      price: numPrice,
+      condition: (condition as VehicleCondition) || "Foreign Used",
+      engine_cc: numEngineCc,
+      transmission: (transmission as Transmission) || "Automatic",
+      fuel: (fuel as FuelType) || "Petrol",
+      mileage: numMileage,
+      body_type: (body_type as BodyType) || "Saloon",
+      drivetrain: drivetrain ? String(drivetrain).trim() : undefined,
+      origin: origin ? String(origin).trim() : undefined,
+      description: description ? String(description).trim() : undefined,
+      features: Array.isArray(features) ? features.map(String) : [],
+      stock_reference: stock_reference ? String(stock_reference).trim() : undefined,
+      status: (status as VehicleStatus) || "Available",
+      photo_urls: Array.isArray(photo_urls) && photo_urls.length > 0 ? photo_urls : ["/images/car-placeholder.jpg"],
+      cover_photo: cover_photo || (photo_urls && photo_urls[0]) || "/images/car-placeholder.jpg",
       location: location || "Nairobi Showroom",
+      proof_records: proof_records || undefined,
     });
 
     return NextResponse.json({ success: true, vehicle }, { status: 201 });
   } catch (error) {
+    const authResp = handleAuthError(error);
+    if (authResp) return authResp;
+
     console.error("Error creating vehicle:", error);
     return NextResponse.json({ error: "Failed to create vehicle" }, { status: 500 });
   }

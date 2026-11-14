@@ -12,9 +12,9 @@ interface EnquirySectionProps {
 
 export function EnquirySection({ vehicle }: EnquirySectionProps) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [enquiryType, setEnquiryType] = useState<"viewing" | "test_drive" | "general">("viewing");
+  const [enquiryType, setEnquiryType] = useState<"Viewing" | "Test Drive" | "General Question">("Viewing");
 
-  const openEnquiry = (type: "viewing" | "test_drive" | "general") => {
+  const openEnquiry = (type: "Viewing" | "Test Drive" | "General Question") => {
     setEnquiryType(type);
     setModalOpen(true);
   };
@@ -22,7 +22,7 @@ export function EnquirySection({ vehicle }: EnquirySectionProps) {
   const isAvailable = vehicle.status === "Available" && !vehicle.sold;
 
   return (
-    <div className="bg-white p-6 rounded-card border border-border space-y-5">
+    <div className="bg-white p-6 border border-border space-y-5">
       <div>
         <h3 className="text-base font-bold text-text-primary">
           Enquire About This Vehicle
@@ -39,7 +39,7 @@ export function EnquirySection({ vehicle }: EnquirySectionProps) {
             href={buildVehicleWhatsAppUrl(vehicle)}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full h-11 px-4 rounded-btn bg-brand-whatsapp text-white text-sm font-semibold hover:bg-brand-whatsappHover transition-colors flex items-center justify-center gap-2"
+            className="w-full h-11 px-4 bg-brand-whatsapp text-white text-sm font-semibold hover:bg-brand-whatsappHover transition-colors flex items-center justify-center gap-2 min-h-[44px]"
           >
             <MessageCircle className="w-4 h-4 fill-current" />
             <span>Chat on WhatsApp</span>
@@ -49,7 +49,7 @@ export function EnquirySection({ vehicle }: EnquirySectionProps) {
         {/* Direct Phone Call Button */}
         <a
           href={`tel:${DEALERSHIP_CONFIG.phone.replace(/\s+/g, "")}`}
-          className="w-full h-11 px-4 rounded-btn border border-border bg-white text-text-primary text-sm font-medium hover:bg-background-secondary transition-colors flex items-center justify-center gap-2"
+          className="w-full h-11 px-4 border border-field bg-white text-text-primary text-sm font-medium hover:bg-background-secondary transition-colors flex items-center justify-center gap-2 min-h-[44px]"
         >
           <Phone className="w-4 h-4 text-text-secondary" />
           <span>Call: {DEALERSHIP_CONFIG.phone}</span>
@@ -59,8 +59,8 @@ export function EnquirySection({ vehicle }: EnquirySectionProps) {
         {isAvailable && (
           <button
             type="button"
-            onClick={() => openEnquiry("viewing")}
-            className="w-full h-11 px-4 rounded-btn border border-border bg-white text-text-primary text-sm font-medium hover:bg-background-secondary transition-colors flex items-center justify-center gap-2"
+            onClick={() => openEnquiry("Viewing")}
+            className="w-full h-11 px-4 border border-field bg-white text-text-primary text-sm font-medium hover:bg-background-secondary transition-colors flex items-center justify-center gap-2 min-h-[44px]"
           >
             <Calendar className="w-4 h-4 text-text-secondary" />
             <span>Schedule Viewing / Test Drive</span>
@@ -70,7 +70,7 @@ export function EnquirySection({ vehicle }: EnquirySectionProps) {
 
       {/* Showroom Working Hours */}
       <div className="pt-4 border-t border-border text-xs text-text-secondary space-y-1">
-        <p className="font-medium text-text-primary">Showroom Details:</p>
+        <p className="font-semibold text-text-primary">Showroom Details:</p>
         <p>{DEALERSHIP_CONFIG.address}</p>
         <p>Mon–Fri: {DEALERSHIP_CONFIG.hours.weekdays} · Sat: {DEALERSHIP_CONFIG.hours.saturday}</p>
       </div>

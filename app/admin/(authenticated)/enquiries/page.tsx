@@ -1,17 +1,22 @@
 import React from "react";
-import { LocalDB } from "@/lib/db/local-db";
+import { EnquiriesRepository } from "@/lib/repositories/enquiries";
 import { EnquiryStatusUpdater } from "@/components/admin/EnquiryStatusUpdater";
 import { Phone, MessageCircle, Calendar, Mail } from "lucide-react";
 import { toKenyanInternationalDigits } from "@/lib/config/dealership";
 
 export const revalidate = 0; // Dynamic server query
 
-export default function AdminEnquiriesPage() {
-  const enquiries = LocalDB.getEnquiries();
+export default async function AdminEnquiriesPage() {
+  const enquiries = await EnquiriesRepository.getStaffEnquiries();
+
+  // Deterministic ordering: created_at DESC (Fixes Priority 1.7)
+  enquiries.sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="border-b border-border pb-4">
         <h1 className="text-2xl font-bold text-text-primary tracking-tight">
           Customer Enquiries & Viewing Requests
         </h1>
@@ -20,7 +25,7 @@ export default function AdminEnquiriesPage() {
         </p>
       </div>
 
-      <div className="bg-white rounded-card border border-border shadow-sm overflow-hidden">
+      <div className="bg-white border border-border overflow-hidden">
         {enquiries.length === 0 ? (
           <div className="p-12 text-center text-xs text-text-secondary">
             No customer enquiries recorded yet.
@@ -29,18 +34,18 @@ export default function AdminEnquiriesPage() {
           <div className="divide-y divide-border">
             {enquiries.map((enq) => {
               const waNumber = toKenyanInternationalDigits(enq.phone);
-              const waMessage = `Hello ${enq.customer_name}, this is MotoHaven Nairobi following up on your enquiry regarding ${enq.vehicle_name || "our inventory"}.`;
+              const waMessage = `Hello ${enq.customer_name}, this is MotoHaven Nairobi following up on your enquiry regarding ${enq.vehicle_name || "our showroom inventory"}.`;
 
               return (
                 <div key={enq.id} className="p-5 sm:p-6 hover:bg-background-secondary/30 transition-colors space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-bold text-text-primary">
+                        <h2 className="text-sm font-bold text-text-primary">
                           {enq.customer_name}
-                        </h3>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-background-secondary border border-border text-text-secondary">
-                          {enq.enquiry_type.replace("_", " ")}
+                        </h2>
+                        <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-background-secondary border border-border text-text-secondary">
+                          {enq.enquiry_type}
                         </span>
                       </div>
                       <p className="text-xs text-text-secondary mt-0.5">
@@ -54,7 +59,7 @@ export default function AdminEnquiriesPage() {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div>
                       <EnquiryStatusUpdater
                         enquiryId={enq.id}
                         currentStatus={enq.status}
@@ -71,12 +76,12 @@ export default function AdminEnquiriesPage() {
                       </p>
                       {enq.preferred_date && (
                         <p className="text-text-secondary flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-action" />
-                          <span>Preferred Date: <strong>{enq.preferred_date}</strong></span>
+                          <Calendar className="w-3.5 h-3.5 text-text-primary" />
+                          <span>Preferred Date: <strong>{enq.preferred_date}</strong> {enq.preferred_time ? `(${enq.preferred_time})` : ""}</span>
                         </p>
                       )}
                       {enq.message && (
-                        <p className="text-text-secondary bg-background-secondary p-2.5 rounded border border-border mt-1">
+                        <p className="text-text-secondary bg-background-secondary p-2.5 border border-border mt-1 leading-relaxed">
                           &quot;{enq.message}&quot;
                         </p>
                       )}
@@ -87,9 +92,9 @@ export default function AdminEnquiriesPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <a
                           href={`tel:${enq.phone.replace(/\s+/g, "")}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-btn bg-background-secondary border border-border text-text-primary hover:bg-background-tertiary transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-field bg-white text-text-primary hover:bg-background-secondary transition-colors min-h-[36px]"
                         >
-                          <Phone className="w-3.5 h-3.5 text-action" />
+                          <Phone className="w-3.5 h-3.5 text-text-secondary" />
                           <span>Call {enq.phone}</span>
                         </a>
 
@@ -97,7 +102,7 @@ export default function AdminEnquiriesPage() {
                           href={`https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-btn bg-brand-whatsapp text-white hover:bg-brand-whatsappHover transition-colors font-semibold"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-whatsapp text-white hover:bg-brand-whatsappHover transition-colors font-semibold min-h-[36px]"
                         >
                           <MessageCircle className="w-3.5 h-3.5 fill-current" />
                           <span>WhatsApp</span>
@@ -106,7 +111,7 @@ export default function AdminEnquiriesPage() {
                         {enq.email && (
                           <a
                             href={`mailto:${enq.email}`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-btn bg-background-secondary border border-border text-text-secondary hover:text-text-primary"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-field bg-white text-text-secondary hover:text-text-primary min-h-[36px]"
                           >
                             <Mail className="w-3.5 h-3.5" />
                             <span>Email</span>

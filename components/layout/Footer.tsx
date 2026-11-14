@@ -6,7 +6,7 @@ import { MessageCircle } from "lucide-react";
 export function Footer() {
   return (
     <footer className="bg-background-secondary border-t border-border mt-auto">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12">
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
           {/* Brand info */}
           <div className="space-y-3">
@@ -26,12 +26,17 @@ export function Footer() {
             <ul className="space-y-1.5">
               <li>
                 <Link href="/cars" className="hover:text-text-primary transition-colors">
-                  Available Vehicles
+                  Cars for sale
                 </Link>
               </li>
               <li>
                 <Link href="/cars?body_type=SUV" className="hover:text-text-primary transition-colors">
                   SUVs & 4x4s
+                </Link>
+              </li>
+              <li>
+                <Link href="/how-it-works" className="hover:text-text-primary transition-colors">
+                  How buying works
                 </Link>
               </li>
               <li>
@@ -41,7 +46,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/contact" className="hover:text-text-primary transition-colors">
-                  Contact & Location
+                  Contact & Showroom
                 </Link>
               </li>
             </ul>
@@ -67,9 +72,9 @@ export function Footer() {
                 href={buildGeneralWhatsAppUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-text-primary hover:text-brand-whatsapp transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-whatsapp hover:text-brand-whatsappHover transition-colors"
               >
-                <MessageCircle className="w-4 h-4 text-brand-whatsapp fill-current" />
+                <MessageCircle className="w-4 h-4 fill-current" />
                 <span>WhatsApp Sales Desk</span>
               </a>
             </div>
@@ -78,16 +83,16 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-text-secondary">
-          <p>© {new Date().getFullYear()} MotoHaven. Nairobi, Kenya. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} MotoHaven Nairobi. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <Link href="/about" className="hover:text-text-primary transition-colors">
-              About
+            <Link href="/how-it-works" className="hover:text-text-primary transition-colors">
+              How buying works
+            </Link>
+            <Link href="/privacy" className="hover:text-text-primary transition-colors">
+              Privacy Notice
             </Link>
             <Link href="/contact" className="hover:text-text-primary transition-colors">
               Contact
-            </Link>
-            <Link href="/admin/login" className="hover:text-text-primary transition-colors">
-              Staff login
             </Link>
           </div>
         </div>

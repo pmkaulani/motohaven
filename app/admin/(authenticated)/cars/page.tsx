@@ -1,19 +1,19 @@
 import React from "react";
 import Link from "next/link";
-import { LocalDB } from "@/lib/db/local-db";
+import { VehiclesRepository } from "@/lib/repositories/vehicles";
 import { formatKSh } from "@/lib/config/dealership";
 import { PlusCircle, ExternalLink, Edit } from "lucide-react";
 import { VehicleStatusUpdater } from "@/components/admin/VehicleStatusUpdater";
 
 export const revalidate = 0; // Dynamic server query
 
-export default function AdminCarsPage() {
-  const vehicles = LocalDB.getAllAdminVehicles();
+export default async function AdminCarsPage() {
+  const vehicles = await VehiclesRepository.getAllStaffVehicles();
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 border-b border-border pb-4">
         <div>
           <h1 className="text-2xl font-bold text-text-primary tracking-tight">
             Vehicle Inventory Management
@@ -24,18 +24,75 @@ export default function AdminCarsPage() {
         </div>
         <Link
           href="/admin/cars/new"
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-btn bg-action text-white text-xs font-semibold hover:bg-action-hover transition-colors shadow-sm self-start sm:self-auto"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-action text-white text-xs font-semibold hover:bg-action-hover transition-colors self-start sm:self-auto min-h-[40px]"
         >
           <PlusCircle className="w-4 h-4" />
           <span>Add New Vehicle</span>
         </Link>
       </div>
 
-      {/* Inventory Table */}
-      <div className="bg-white rounded-card border border-border shadow-sm overflow-hidden">
+      {/* Mobile Stacked View (< 768px): No horizontal overflow, touch friendly */}
+      <div className="md:hidden divide-y divide-border border border-border bg-white">
+        {vehicles.map((car) => (
+          <div key={car.id} className="p-4 space-y-3">
+            <div className="flex items-start gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={car.cover_photo || car.photo_urls[0]}
+                alt={car.model}
+                className="w-20 h-16 object-cover bg-background-secondary shrink-0 border border-border"
+              />
+              <div className="flex-1 min-w-0">
+                <Link
+                  href={`/admin/cars/${car.id}/edit`}
+                  className="font-bold text-sm text-text-primary hover:underline truncate block"
+                >
+                  {car.year} {car.brand} {car.model}
+                </Link>
+                <p className="text-xs text-text-secondary">
+                  {car.mileage.toLocaleString("en-KE")} km · {car.transmission} · {car.fuel}
+                </p>
+                <p className="text-sm font-extrabold text-text-primary mt-1">
+                  {formatKSh(car.price)}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-border-subtle gap-2">
+              <div>
+                <VehicleStatusUpdater
+                  vehicleId={car.id}
+                  currentStatus={car.status}
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/cars/${car.slug}`}
+                  target="_blank"
+                  className="p-2 text-text-secondary hover:text-text-primary border border-field min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  aria-label={`View ${car.brand} ${car.model} on public site`}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Link>
+                <Link
+                  href={`/admin/cars/${car.id}/edit`}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-action text-white text-xs font-semibold hover:bg-action-hover min-h-[36px]"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  <span>Edit</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop / Tablet Table (>= 768px) */}
+      <div className="hidden md:block bg-white border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-background-secondary border-b border-border text-text-secondary font-semibold uppercase tracking-wider text-[10px]">
+            <thead className="bg-background-secondary border-b border-border text-text-secondary font-semibold uppercase tracking-wider text-[11px]">
               <tr>
                 <th className="py-3 px-4">Vehicle</th>
                 <th className="py-3 px-4">Year & Specs</th>
@@ -55,12 +112,12 @@ export default function AdminCarsPage() {
                       <img
                         src={car.cover_photo || car.photo_urls[0]}
                         alt={car.model}
-                        className="w-14 h-10 object-cover rounded bg-background-tertiary shrink-0 border border-border"
+                        className="w-14 h-10 object-cover bg-background-secondary shrink-0 border border-border"
                       />
                       <div>
                         <Link
                           href={`/admin/cars/${car.id}/edit`}
-                          className="font-bold text-text-primary hover:text-action block leading-tight"
+                          className="font-bold text-text-primary hover:underline block leading-tight text-sm"
                         >
                           {car.brand} {car.model}
                         </Link>
@@ -108,16 +165,18 @@ export default function AdminCarsPage() {
                     <Link
                       href={`/cars/${car.slug}`}
                       target="_blank"
-                      className="p-1.5 inline-flex text-text-secondary hover:text-action hover:bg-background-secondary rounded"
+                      className="p-1.5 inline-flex text-text-secondary hover:text-text-primary hover:bg-background-secondary min-w-[32px] min-h-[32px] items-center justify-center"
                       title="View on Public Website"
+                      aria-label={`View ${car.brand} ${car.model} publicly`}
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                     </Link>
 
                     <Link
                       href={`/admin/cars/${car.id}/edit`}
-                      className="p-1.5 inline-flex text-text-secondary hover:text-action hover:bg-background-secondary rounded"
+                      className="p-1.5 inline-flex text-text-secondary hover:text-text-primary hover:bg-background-secondary min-w-[32px] min-h-[32px] items-center justify-center"
                       title="Edit Vehicle Details"
+                      aria-label={`Edit ${car.brand} ${car.model}`}
                     >
                       <Edit className="w-3.5 h-3.5" />
                     </Link>

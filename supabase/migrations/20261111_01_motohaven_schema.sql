@@ -1,65 +1,81 @@
--- ==============================================================================
--- MotoHaven Nairobi Dealership — Database Schema & Security Hardening Migration
--- Version: 20261111_01
---
--- This migration:
--- 1. Preserves all existing listings in `public.listings`.
--- 2. Additively adds missing dealership attributes (slug, body_type, features, etc.).
--- 3. Creates the `public.enquiries` table for customer viewings and test drives.
--- 4. Enforces Row Level Security (RLS) to eliminate PII leaks.
--- 5. Creates a safe `public_vehicles` view that hides private seller details.
--- ==============================================================================
+-- MotoHaven Dealership Schema Migration & Row Level Security (RLS) Hardening
+-- Version: 20261113_02_remediation
+-- Description:
+--   1. Adds staff membership table and is_staff() security definer function.
+--   2. Enforces RLS: blocks public SELECT on base listings table; public must use public_vehicles view.
+--   3. Replaces broad 'TO authenticated USING (true)' with explicit is_staff() checks.
+--   4. Restricts public enquiry inserts (forces status = 'New' and notes IS NULL).
+--   5. Hardens storage policies for 'car-photos' bucket to verified staff only.
 
--- 1. ADDITIVE ATTRIBUTES ON `listings` TABLE
-ALTER TABLE IF EXISTS public.listings
-  ADD COLUMN IF NOT EXISTS slug text,
-  ADD COLUMN IF NOT EXISTS trim text,
-  ADD COLUMN IF NOT EXISTS body_type text,
-  ADD COLUMN IF NOT EXISTS drivetrain text,
-  ADD COLUMN IF NOT EXISTS origin text,
-  ADD COLUMN IF NOT EXISTS description text,
-  ADD COLUMN IF NOT EXISTS features text[] DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS stock_reference text,
-  ADD COLUMN IF NOT EXISTS cover_photo text,
-  ADD COLUMN IF NOT EXISTS status text DEFAULT 'Available',
-  ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
-
--- Populate slug for existing records without one
-UPDATE public.listings
-SET slug = lower(regexp_replace(concat(brand, '-', model, '-', year, '-', substring(id::text from 1 for 4)), '[^a-zA-Z0-9]+', '-', 'g'))
-WHERE slug IS NULL;
-
--- Make slug unique
-CREATE UNIQUE INDEX IF NOT EXISTS listings_slug_idx ON public.listings(slug);
-
--- Sync status from existing `sold` boolean
-UPDATE public.listings
-SET status = CASE WHEN sold = true THEN 'Sold' ELSE 'Available' END
-WHERE status IS NULL OR status = 'Available';
-
--- 2. CREATE `enquiries` TABLE
-CREATE TABLE IF NOT EXISTS public.enquiries (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  customer_name text NOT NULL,
-  phone text NOT NULL,
-  email text,
-  vehicle_id uuid REFERENCES public.listings(id) ON DELETE SET NULL,
-  vehicle_name text,
-  vehicle_price numeric,
-  enquiry_type text NOT NULL DEFAULT 'general' CHECK (enquiry_type IN ('viewing', 'test_drive', 'general')),
-  preferred_date date,
-  message text,
-  status text NOT NULL DEFAULT 'New' CHECK (status IN ('New', 'Contacted', 'Viewing scheduled', 'Completed', 'Closed')),
-  notes text,
-  updated_at timestamptz DEFAULT now()
+-- 1. STAFF MEMBERSHIP TABLE
+CREATE TABLE IF NOT EXISTS public.staff (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT NOT NULL UNIQUE,
+  role TEXT NOT NULL DEFAULT 'staff',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- Index for staff enquiry triage
-CREATE INDEX IF NOT EXISTS enquiries_status_created_idx ON public.enquiries(status, created_at DESC);
+ALTER TABLE public.staff ENABLE ROW LEVEL SECURITY;
 
--- 3. SECURE PUBLIC VIEW FOR VEHICLES (EXCLUDES SELLER PII)
--- Public visitors and frontends MUST query this view or equivalent safe columns.
+-- Only authenticated staff can see staff directory
+CREATE OR REPLACE FUNCTION public.is_staff()
+RETURNS boolean AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.staff WHERE staff.id = auth.uid()
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+DROP POLICY IF EXISTS "Staff can read staff members" ON public.staff;
+CREATE POLICY "Staff can read staff members"
+  ON public.staff
+  FOR SELECT
+  TO authenticated
+  USING (public.is_staff());
+
+-- 2. ADDITIVE SCHEMA COLUMNS TO 'listings'
+ALTER TABLE public.listings
+  ADD COLUMN IF NOT EXISTS slug TEXT UNIQUE,
+  ADD COLUMN IF NOT EXISTS trim TEXT,
+  ADD COLUMN IF NOT EXISTS body_type TEXT,
+  ADD COLUMN IF NOT EXISTS drivetrain TEXT,
+  ADD COLUMN IF NOT EXISTS origin TEXT,
+  ADD COLUMN IF NOT EXISTS description TEXT,
+  ADD COLUMN IF NOT EXISTS features TEXT[],
+  ADD COLUMN IF NOT EXISTS stock_reference TEXT,
+  ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'Available',
+  ADD COLUMN IF NOT EXISTS cover_photo TEXT,
+  ADD COLUMN IF NOT EXISTS proof_records JSONB,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ;
+
+-- Backfill slugs for existing records if null
+UPDATE public.listings
+SET slug = lower(concat_ws('-', brand, model, year, substring(id::text, 1, 4)))
+WHERE slug IS NULL;
+
+-- 3. CUSTOMER ENQUIRIES TABLE
+CREATE TABLE IF NOT EXISTS public.enquiries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  vehicle_id UUID REFERENCES public.listings(id) ON DELETE SET NULL,
+  vehicle_name TEXT,
+  vehicle_price NUMERIC,
+  customer_name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  email TEXT,
+  enquiry_type TEXT NOT NULL DEFAULT 'Viewing',
+  preferred_date DATE,
+  preferred_time TEXT,
+  message TEXT,
+  status TEXT NOT NULL DEFAULT 'New',
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+  updated_at TIMESTAMPTZ
+);
+
+-- 4. SECURE PUBLIC VIEW FOR VEHICLES (EXCLUDES SELLER PII)
+-- Public visitors and frontends MUST query this view.
+-- Excludes seller_name, phone, whatsapp, pin.
 CREATE OR REPLACE VIEW public.public_vehicles AS
 SELECT
   id,
@@ -85,38 +101,33 @@ SELECT
   sold,
   photo_urls,
   COALESCE(cover_photo, photo_urls[1]) AS cover_photo,
+  proof_records,
   created_at
 FROM public.listings
-WHERE status IN ('Available', 'Reserved', 'Sold');
+WHERE status IN ('Available', 'Reserved');
 
 GRANT SELECT ON public.public_vehicles TO anon, authenticated;
 
--- 4. ROW LEVEL SECURITY (RLS) POLICIES
-
--- Enable RLS on listings and enquiries
+-- 5. ROW LEVEL SECURITY (RLS) POLICIES
 ALTER TABLE public.listings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.enquiries ENABLE ROW LEVEL SECURITY;
 
--- Listings Policies
--- Public can read active dealership inventory
+-- STRICT: Drop public SELECT on base listings table (Fixes Finding 6)
+-- Public frontend MUST query public_vehicles view.
 DROP POLICY IF EXISTS "Public can view available listings" ON public.listings;
-CREATE POLICY "Public can view available listings"
-  ON public.listings
-  FOR SELECT
-  TO anon, authenticated
-  USING (status IN ('Available', 'Reserved', 'Sold'));
+DROP POLICY IF EXISTS "Allow public read access to active listings" ON public.listings;
 
--- Staff full control on listings (create, edit, archive, delete)
+-- Staff full control on listings (Requires is_staff(), Fixes Finding 7)
 DROP POLICY IF EXISTS "Staff full access to listings" ON public.listings;
 CREATE POLICY "Staff full access to listings"
   ON public.listings
   FOR ALL
   TO authenticated
-  USING (true)
-  WITH CHECK (true);
+  USING (public.is_staff())
+  WITH CHECK (public.is_staff());
 
 -- Enquiries Policies
--- Public visitors can submit viewing and test-drive requests
+-- Public visitors can submit enquiries, but CANNOT forge status or notes (Fixes Finding 12)
 DROP POLICY IF EXISTS "Public can submit enquiries" ON public.enquiries;
 CREATE POLICY "Public can submit enquiries"
   ON public.enquiries
@@ -126,23 +137,27 @@ CREATE POLICY "Public can submit enquiries"
     customer_name IS NOT NULL AND
     phone IS NOT NULL AND
     length(customer_name) >= 2 AND
-    length(phone) >= 9
+    length(customer_name) <= 100 AND
+    length(phone) >= 9 AND
+    length(phone) <= 30 AND
+    status = 'New' AND
+    notes IS NULL
   );
 
--- STRICT PRIVACY: Anonymous visitors CANNOT read other customers' enquiries
+-- STRICT PRIVACY: Anonymous visitors CANNOT read enquiries
 DROP POLICY IF EXISTS "Public cannot read enquiries" ON public.enquiries;
 
--- Staff can view and manage all enquiries
+-- Staff can view and manage all enquiries (Requires is_staff())
 DROP POLICY IF EXISTS "Staff can manage enquiries" ON public.enquiries;
 CREATE POLICY "Staff can manage enquiries"
   ON public.enquiries
   FOR ALL
   TO authenticated
-  USING (true)
-  WITH CHECK (true);
+  USING (public.is_staff())
+  WITH CHECK (public.is_staff());
 
--- 5. STORAGE POLICIES (car-photos bucket)
--- Public can read photos
+-- 6. STORAGE POLICIES (car-photos bucket)
+-- Public can read car photos
 DROP POLICY IF EXISTS "Public read car photos" ON storage.objects;
 CREATE POLICY "Public read car photos"
   ON storage.objects
@@ -150,17 +165,18 @@ CREATE POLICY "Public read car photos"
   TO anon, authenticated
   USING (bucket_id = 'car-photos');
 
--- Only authenticated staff can upload or delete photos
+-- Only verified staff can upload photos (Requires is_staff())
 DROP POLICY IF EXISTS "Staff upload car photos" ON storage.objects;
 CREATE POLICY "Staff upload car photos"
   ON storage.objects
   FOR INSERT
   TO authenticated
-  WITH CHECK (bucket_id = 'car-photos');
+  WITH CHECK (bucket_id = 'car-photos' AND public.is_staff());
 
+-- Only verified staff can update or delete photos (Requires is_staff())
 DROP POLICY IF EXISTS "Staff update delete car photos" ON storage.objects;
 CREATE POLICY "Staff update delete car photos"
   ON storage.objects
   FOR ALL
   TO authenticated
-  USING (bucket_id = 'car-photos');
+  USING (bucket_id = 'car-photos' AND public.is_staff());

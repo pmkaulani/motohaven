@@ -1,21 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useId } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SlidersHorizontal, X, RotateCcw, Search } from "lucide-react";
+import { Search, SlidersHorizontal, X, RotateCcw } from "lucide-react";
 
-interface FilterProps {
-  totalResults: number;
+interface InventoryFiltersProps {
+  totalCount: number;
 }
 
-export function InventoryFilters({ totalResults }: FilterProps) {
+export function InventoryFilters({ totalCount }: InventoryFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Mobile drawer state
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  // Unique IDs for accessibility
+  const searchId = useId();
+  const sortId = useId();
+  const brandId = useId();
+  const bodyTypeId = useId();
+  const conditionId = useId();
+  const minPriceId = useId();
+  const maxPriceId = useId();
+  const transmissionId = useId();
+  const fuelId = useId();
 
-  // Active filter values from URL
+  // URL state
   const q = searchParams.get("q") || "";
   const brand = searchParams.get("brand") || "";
   const bodyType = searchParams.get("body_type") || "";
@@ -28,7 +36,8 @@ export function InventoryFilters({ totalResults }: FilterProps) {
   const maxYear = searchParams.get("maxYear") || "";
   const sort = searchParams.get("sort") || "recent";
 
-  // Local drawer state for editing before apply
+  // Local draft state for drawer
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [localQ, setLocalQ] = useState(q);
   const [localBrand, setLocalBrand] = useState(brand);
   const [localBodyType, setLocalBodyType] = useState(bodyType);
@@ -41,7 +50,8 @@ export function InventoryFilters({ totalResults }: FilterProps) {
   const [localMaxYear, setLocalMaxYear] = useState(maxYear);
   const [localSort, setLocalSort] = useState(sort);
 
-  React.useEffect(() => {
+  // Sync when searchParams change
+  useEffect(() => {
     setLocalQ(q);
     setLocalBrand(brand);
     setLocalBodyType(bodyType);
@@ -54,6 +64,17 @@ export function InventoryFilters({ totalResults }: FilterProps) {
     setLocalMaxYear(maxYear);
     setLocalSort(sort);
   }, [q, brand, bodyType, condition, transmission, fuel, minPrice, maxPrice, minYear, maxYear, sort]);
+
+  // Close drawer on Escape key (Accessibility fix)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && drawerOpen) {
+        setDrawerOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [drawerOpen]);
 
   const applyFilters = (overrides?: Record<string, string>) => {
     const params = new URLSearchParams();
@@ -105,6 +126,13 @@ export function InventoryFilters({ totalResults }: FilterProps) {
     applyFilters({ [key]: "" });
   };
 
+  // Atomic price filter removal (Fixes Defect D8)
+  const removePriceFilter = () => {
+    setLocalMinPrice("");
+    setLocalMaxPrice("");
+    applyFilters({ minPrice: "", maxPrice: "" });
+  };
+
   const activeCount = [
     q, brand, bodyType, condition, transmission, fuel,
     minPrice, maxPrice, minYear, maxYear
@@ -116,121 +144,169 @@ export function InventoryFilters({ totalResults }: FilterProps) {
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         {/* Search Bar */}
         <div className="relative flex-1">
+          <label htmlFor={searchId} className="sr-only">
+            Search cars by make, model or keyword
+          </label>
           <input
+            id={searchId}
             type="text"
             value={localQ}
             onChange={(e) => setLocalQ(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") applyFilters();
             }}
-            placeholder="Search make, model, or keywords..."
-            className="w-full h-11 pl-10 pr-20 text-sm bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+            placeholder="Search by make, model, or keyword..."
+            className="w-full h-11 pl-10 pr-4 bg-white border border-field text-text-primary placeholder:text-text-secondary text-sm focus:border-text-primary"
           />
           <Search className="w-4 h-4 text-text-secondary absolute left-3.5 top-3.5 pointer-events-none" />
-          <button
-            type="button"
-            onClick={() => applyFilters()}
-            className="absolute right-1.5 top-1.5 h-8 px-3 text-xs font-semibold bg-action text-white rounded-btn hover:bg-action-hover"
-          >
-            Search
-          </button>
+          {localQ && (
+            <button
+              type="button"
+              onClick={() => {
+                setLocalQ("");
+                applyFilters({ q: "" });
+              }}
+              aria-label="Clear search input"
+              className="absolute right-3 top-3 text-text-secondary hover:text-text-primary p-0.5"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
-        {/* Sort & Filter Button */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-2 flex-1 sm:flex-none">
-            <span className="text-xs font-medium text-text-secondary hidden sm:inline">
-              Sort:
-            </span>
+        {/* Filter Button & Sort Controls */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            aria-expanded={drawerOpen}
+            aria-controls="filter-drawer"
+            className="h-11 px-4 border border-field bg-white text-text-primary text-xs font-semibold hover:bg-background-secondary transition-colors flex items-center gap-2 min-h-[44px]"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span>Filters</span>
+            {activeCount > 0 && (
+              <span className="w-5 h-5 rounded-full bg-text-primary text-white text-[11px] font-bold flex items-center justify-center ml-1">
+                {activeCount}
+              </span>
+            )}
+          </button>
+
+          <div className="relative">
+            <label htmlFor={sortId} className="sr-only">
+              Sort vehicle inventory
+            </label>
             <select
+              id={sortId}
               value={sort}
               onChange={(e) => {
                 setLocalSort(e.target.value);
                 applyFilters({ sort: e.target.value });
               }}
-              className="w-full sm:w-auto h-11 px-3 text-xs font-medium bg-white rounded-btn border border-border focus:outline-none cursor-pointer"
+              className="h-11 px-3 pr-8 border border-field bg-white text-text-primary text-xs font-medium focus:border-text-primary min-h-[44px]"
             >
               <option value="recent">Recently Added</option>
               <option value="price_asc">Price: Low to High</option>
               <option value="price_desc">Price: High to Low</option>
-              <option value="year_desc">Year: Newest</option>
-              <option value="year_asc">Year: Oldest</option>
-              <option value="mileage_asc">Lowest Mileage</option>
+              <option value="year_desc">Year: Newest First</option>
+              <option value="year_asc">Year: Oldest First</option>
+              <option value="mileage_asc">Mileage: Lowest First</option>
             </select>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            className="h-11 inline-flex items-center gap-2 px-4 text-xs font-semibold bg-white border border-border rounded-btn hover:bg-background-secondary transition-colors"
-          >
-            <SlidersHorizontal className="w-4 h-4 text-action" />
-            <span>Filters</span>
-            {activeCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-action text-white text-[10px] flex items-center justify-center font-bold">
-                {activeCount}
-              </span>
-            )}
-          </button>
         </div>
       </div>
 
-      {/* Active Filter Chips (Quiet text chips) */}
+      {/* Active Filter Chips (Light text chips, not heavy cards) */}
       {activeCount > 0 && (
-        <div className="flex items-center flex-wrap gap-2 text-xs pt-1">
-          <span className="text-text-secondary">Filters:</span>
+        <div className="flex flex-wrap items-center gap-2 text-xs pt-1">
+          <span className="text-text-secondary font-medium mr-1">Active filters:</span>
           {q && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-background-secondary border border-border text-text-primary">
               Keyword: &quot;{q}&quot;
-              <button type="button" onClick={() => removeFilter("q")} className="hover:text-red-700">
+              <button
+                type="button"
+                onClick={() => removeFilter("q")}
+                aria-label={`Remove keyword filter ${q}`}
+                className="hover:text-red-700 p-0.5"
+              >
                 <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           {brand && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-background-secondary border border-border text-text-primary">
               Make: {brand}
-              <button type="button" onClick={() => removeFilter("brand")} className="hover:text-red-700">
+              <button
+                type="button"
+                onClick={() => removeFilter("brand")}
+                aria-label={`Remove make filter ${brand}`}
+                className="hover:text-red-700 p-0.5"
+              >
                 <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           {bodyType && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-background-secondary border border-border text-text-primary">
               Body: {bodyType}
-              <button type="button" onClick={() => removeFilter("body_type")} className="hover:text-red-700">
+              <button
+                type="button"
+                onClick={() => removeFilter("body_type")}
+                aria-label={`Remove body type filter ${bodyType}`}
+                className="hover:text-red-700 p-0.5"
+              >
                 <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           {condition && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-background-secondary border border-border text-text-primary">
               {condition}
-              <button type="button" onClick={() => removeFilter("condition")} className="hover:text-red-700">
+              <button
+                type="button"
+                onClick={() => removeFilter("condition")}
+                aria-label={`Remove condition filter ${condition}`}
+                className="hover:text-red-700 p-0.5"
+              >
                 <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           {transmission && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-background-secondary border border-border text-text-primary">
               {transmission}
-              <button type="button" onClick={() => removeFilter("transmission")} className="hover:text-red-700">
+              <button
+                type="button"
+                onClick={() => removeFilter("transmission")}
+                aria-label={`Remove transmission filter ${transmission}`}
+                className="hover:text-red-700 p-0.5"
+              >
                 <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           {fuel && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-background-secondary border border-border text-text-primary">
               {fuel}
-              <button type="button" onClick={() => removeFilter("fuel")} className="hover:text-red-700">
+              <button
+                type="button"
+                onClick={() => removeFilter("fuel")}
+                aria-label={`Remove fuel filter ${fuel}`}
+                className="hover:text-red-700 p-0.5"
+              >
                 <X className="w-3.5 h-3.5" />
               </button>
             </span>
           )}
           {(minPrice || maxPrice) && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background-tertiary text-text-primary">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-background-secondary border border-border text-text-primary">
               Price: {minPrice ? `KSh ${Number(minPrice).toLocaleString("en-KE")}` : "0"} – {maxPrice ? `KSh ${Number(maxPrice).toLocaleString("en-KE")}` : "Any"}
-              <button type="button" onClick={() => { removeFilter("minPrice"); removeFilter("maxPrice"); }} className="hover:text-red-700">
+              <button
+                type="button"
+                onClick={removePriceFilter}
+                aria-label="Remove price range filter"
+                className="hover:text-red-700 p-0.5"
+              >
                 <X className="w-3.5 h-3.5" />
               </button>
             </span>
@@ -238,32 +314,38 @@ export function InventoryFilters({ totalResults }: FilterProps) {
           <button
             type="button"
             onClick={handleReset}
-            className="text-text-secondary hover:text-action underline ml-1 flex items-center gap-1"
+            className="text-text-secondary hover:text-text-primary underline ml-1 flex items-center gap-1 py-1"
           >
             <RotateCcw className="w-3 h-3" />
-            <span>Reset</span>
+            <span>Reset all</span>
           </button>
         </div>
       )}
 
-      {/* Filter Drawer (Clean White, Accessible, No Heavy Shadow) */}
+      {/* Filter Drawer (Accessible Dialog) */}
       {drawerOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-black/30">
-          <div className="relative w-full max-w-md bg-white h-full flex flex-col justify-between border-l border-border">
+        <div
+          id="filter-drawer"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="filter-drawer-title"
+          className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-black/40"
+        >
+          <div className="relative w-full max-w-md bg-white h-full flex flex-col justify-between border-l border-border shadow-xl">
             {/* Drawer Header */}
             <div className="p-5 border-b border-border flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-text-primary">
+                <h2 id="filter-drawer-title" className="text-base font-bold text-text-primary">
                   Filter Inventory
-                </h3>
+                </h2>
                 <p className="text-xs text-text-secondary mt-0.5">
-                  Showing {totalResults} available vehicles
+                  Refine {totalCount} vehicles in showroom
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setDrawerOpen(false)}
-                className="p-2 text-text-secondary hover:text-text-primary rounded-btn"
+                className="p-2 text-text-secondary hover:text-text-primary min-w-[44px] min-h-[44px] flex items-center justify-center"
                 aria-label="Close Filter Drawer"
               >
                 <X className="w-5 h-5" />
@@ -273,13 +355,14 @@ export function InventoryFilters({ totalResults }: FilterProps) {
             {/* Scrollable Filter Fields */}
             <div className="p-6 overflow-y-auto space-y-5 flex-1 text-sm">
               <div>
-                <label className="block font-semibold text-text-primary mb-1.5 text-xs">
+                <label htmlFor={brandId} className="block font-medium text-text-primary mb-1.5 text-xs">
                   Make / Manufacturer
                 </label>
                 <select
+                  id={brandId}
                   value={localBrand}
                   onChange={(e) => setLocalBrand(e.target.value)}
-                  className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
+                  className="w-full h-11 px-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
                 >
                   <option value="">All Makes</option>
                   <option value="Toyota">Toyota</option>
@@ -293,13 +376,14 @@ export function InventoryFilters({ totalResults }: FilterProps) {
               </div>
 
               <div>
-                <label className="block font-semibold text-text-primary mb-1.5 text-xs">
+                <label htmlFor={bodyTypeId} className="block font-medium text-text-primary mb-1.5 text-xs">
                   Body Type
                 </label>
                 <select
+                  id={bodyTypeId}
                   value={localBodyType}
                   onChange={(e) => setLocalBodyType(e.target.value)}
-                  className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
+                  className="w-full h-11 px-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
                 >
                   <option value="">All Body Types</option>
                   <option value="SUV">SUV & 4x4</option>
@@ -311,13 +395,14 @@ export function InventoryFilters({ totalResults }: FilterProps) {
               </div>
 
               <div>
-                <label className="block font-semibold text-text-primary mb-1.5 text-xs">
+                <label htmlFor={conditionId} className="block font-medium text-text-primary mb-1.5 text-xs">
                   Condition
                 </label>
                 <select
+                  id={conditionId}
                   value={localCondition}
                   onChange={(e) => setLocalCondition(e.target.value)}
-                  className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
+                  className="w-full h-11 px-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
                 >
                   <option value="">All Conditions</option>
                   <option value="Foreign Used">Foreign Used (Import)</option>
@@ -327,36 +412,45 @@ export function InventoryFilters({ totalResults }: FilterProps) {
               </div>
 
               <div>
-                <label className="block font-semibold text-text-primary mb-1.5 text-xs">
+                <p className="block font-medium text-text-primary mb-1.5 text-xs">
                   Price Range (KSh)
-                </label>
+                </p>
                 <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="number"
-                    placeholder="Min KSh"
-                    value={localMinPrice}
-                    onChange={(e) => setLocalMinPrice(e.target.value)}
-                    className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none text-sm"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Max KSh"
-                    value={localMaxPrice}
-                    onChange={(e) => setLocalMaxPrice(e.target.value)}
-                    className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none text-sm"
-                  />
+                  <div>
+                    <label htmlFor={minPriceId} className="sr-only">Minimum price in KSh</label>
+                    <input
+                      id={minPriceId}
+                      type="number"
+                      placeholder="Min KSh"
+                      value={localMinPrice}
+                      onChange={(e) => setLocalMinPrice(e.target.value)}
+                      className="w-full h-11 px-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor={maxPriceId} className="sr-only">Maximum price in KSh</label>
+                    <input
+                      id={maxPriceId}
+                      type="number"
+                      placeholder="Max KSh"
+                      value={localMaxPrice}
+                      onChange={(e) => setLocalMaxPrice(e.target.value)}
+                      className="w-full h-11 px-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
+                    />
+                  </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-semibold text-text-primary mb-1.5 text-xs">
+                  <label htmlFor={transmissionId} className="block font-medium text-text-primary mb-1.5 text-xs">
                     Transmission
                   </label>
                   <select
+                    id={transmissionId}
                     value={localTransmission}
                     onChange={(e) => setLocalTransmission(e.target.value)}
-                    className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
+                    className="w-full h-11 px-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
                   >
                     <option value="">All</option>
                     <option value="Automatic">Automatic</option>
@@ -364,13 +458,14 @@ export function InventoryFilters({ totalResults }: FilterProps) {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold text-text-primary mb-1.5 text-xs">
+                  <label htmlFor={fuelId} className="block font-medium text-text-primary mb-1.5 text-xs">
                     Fuel Type
                   </label>
                   <select
+                    id={fuelId}
                     value={localFuel}
                     onChange={(e) => setLocalFuel(e.target.value)}
-                    className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:outline-none"
+                    className="w-full h-11 px-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
                   >
                     <option value="">All</option>
                     <option value="Petrol">Petrol</option>
@@ -381,21 +476,21 @@ export function InventoryFilters({ totalResults }: FilterProps) {
               </div>
             </div>
 
-            {/* Drawer Footer Actions */}
-            <div className="p-5 border-t border-border bg-background-secondary flex items-center gap-3">
+            {/* Bottom Actions */}
+            <div className="p-5 border-t border-border bg-background-secondary flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={handleReset}
-                className="flex-1 h-11 px-4 text-xs font-semibold border border-border rounded-btn bg-white text-text-primary hover:bg-background-tertiary transition-colors"
+                className="py-2.5 px-4 text-xs font-semibold text-text-secondary hover:text-text-primary min-h-[44px]"
               >
-                Reset
+                Reset All
               </button>
               <button
                 type="button"
                 onClick={() => applyFilters()}
-                className="flex-1 h-11 px-4 text-xs font-semibold bg-action text-white rounded-btn hover:bg-action-hover transition-colors"
+                className="py-2.5 px-6 text-xs font-semibold bg-action text-white hover:bg-action-hover transition-colors min-h-[44px]"
               >
-                Apply Filters
+                Show {totalCount} Vehicles
               </button>
             </div>
           </div>

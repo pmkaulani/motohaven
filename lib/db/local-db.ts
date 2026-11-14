@@ -242,7 +242,10 @@ function ensureDbFile(): DatabaseSchema {
     }
     return data;
   } catch (err) {
-    console.error("Error reading local db file, resetting to initial data:", err);
+    if (fs.existsSync(DB_FILE)) {
+      console.error("[CRITICAL DATA ERROR] Failed to parse local database file:", err);
+      throw new Error(`CRITICAL: Database file corruption in ${DB_FILE}. Overwrite blocked to prevent data loss. Error: ${err}`);
+    }
     const initialData: DatabaseSchema = {
       vehicles: INITIAL_VEHICLES,
       enquiries: INITIAL_ENQUIRIES,
@@ -377,14 +380,24 @@ export const LocalDB = {
     return [...db.vehicles].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 
-  getVehicleBySlug(slug: string): Vehicle | null {
+  getVehicleBySlug(slug: string, publicOnly = true): Vehicle | null {
     const db = ensureDbFile();
-    return db.vehicles.find((v) => v.slug === slug || v.id === slug) || null;
+    const vehicle = db.vehicles.find((v) => v.slug === slug || v.id === slug) || null;
+    if (!vehicle) return null;
+    if (publicOnly && (vehicle.status === "Draft" || vehicle.status === "Archived")) {
+      return null;
+    }
+    return vehicle;
   },
 
-  getVehicleById(id: string): Vehicle | null {
+  getVehicleById(id: string, publicOnly = false): Vehicle | null {
     const db = ensureDbFile();
-    return db.vehicles.find((v) => v.id === id) || null;
+    const vehicle = db.vehicles.find((v) => v.id === id) || null;
+    if (!vehicle) return null;
+    if (publicOnly && (vehicle.status === "Draft" || vehicle.status === "Archived")) {
+      return null;
+    }
+    return vehicle;
   },
 
   getSimilarVehicles(vehicleId: string, limit: number = 3): Vehicle[] {
@@ -507,8 +520,8 @@ export const LocalDB = {
       archived,
       newEnquiries,
       totalEnquiries,
-      recentVehicles: db.vehicles.slice(0, 5),
-      recentEnquiries: db.enquiries.slice(0, 5),
+      recentVehicles: [...db.vehicles].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5),
+      recentEnquiries: [...db.enquiries].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5),
     };
   },
 };
