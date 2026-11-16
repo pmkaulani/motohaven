@@ -8,7 +8,7 @@ import { VehicleCard } from "@/components/vehicle/VehicleCard";
 import { VehiclesRepository } from "@/lib/repositories/vehicles";
 import { ArrowRight } from "lucide-react";
 
-export const revalidate = 0; // Dynamic server render for live inventory
+export const revalidate = 60; // 60-second CDN caching with on-demand staff revalidation (Finding R15)
 
 export default async function HomePage() {
   const result = await VehiclesRepository.getPublishedVehicles({ limit: 6, sort: "recent" });

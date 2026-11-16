@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { VehiclesRepository } from "@/lib/repositories/vehicles";
 import { requireStaff, getStaffSession, handleAuthError } from "@/lib/auth/guards";
+import { UpdateVehicleSchema } from "@/lib/validations/vehicle";
 import { Vehicle } from "@/types/vehicle";
 
 export async function GET(
@@ -36,54 +38,30 @@ export async function PATCH(
     // 1. Guard endpoint: staff only
     requireStaff(req);
 
-    // 2. Strict allowlist - NEVER spread raw body into record
+    // 2. Validate input using Zod schema (Finding R6)
     const body = await req.json();
-    const allowedKeys = [
-      "brand",
-      "model",
-      "trim",
-      "year",
-      "price",
-      "condition",
-      "engine_cc",
-      "transmission",
-      "fuel",
-      "mileage",
-      "body_type",
-      "drivetrain",
-      "origin",
-      "description",
-      "features",
-      "stock_reference",
-      "status",
-      "sold",
-      "photo_urls",
-      "cover_photo",
-      "location",
-      "proof_records",
-    ];
+    const parseResult = UpdateVehicleSchema.safeParse(body);
 
-    const safeUpdates: Partial<Vehicle> = {};
-    for (const key of allowedKeys) {
-      if (body[key] !== undefined) {
-        safeUpdates[key as keyof Vehicle] = body[key];
-      }
+    if (!parseResult.success) {
+      return NextResponse.json(
+        {
+          error: "Invalid update parameters.",
+          details: parseResult.error.flatten().fieldErrors,
+        },
+        { status: 400 }
+      );
     }
 
-    if (safeUpdates.price !== undefined) {
-      safeUpdates.price = Number(safeUpdates.price);
-      if (isNaN(safeUpdates.price) || safeUpdates.price <= 0) {
-        return NextResponse.json({ error: "Invalid vehicle price" }, { status: 400 });
-      }
-    }
-
-    if (safeUpdates.year !== undefined) {
-      safeUpdates.year = Number(safeUpdates.year);
-    }
-
-    const updated = await VehiclesRepository.updateVehicle(params.id, safeUpdates);
+    const updated = await VehiclesRepository.updateVehicle(params.id, parseResult.data as any);
     if (!updated) {
       return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });
+    }
+
+    // Finding R15: On-demand cache revalidation
+    revalidatePath("/cars");
+    revalidatePath("/");
+    if (updated.slug) {
+      revalidatePath(`/cars/${updated.slug}`);
     }
 
     return NextResponse.json({ success: true, vehicle: updated });
@@ -108,6 +86,10 @@ export async function DELETE(
     if (!success) {
       return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });
     }
+
+    // Finding R15: On-demand cache revalidation
+    revalidatePath("/cars");
+    revalidatePath("/");
 
     return NextResponse.json({ success: true });
   } catch (error) {

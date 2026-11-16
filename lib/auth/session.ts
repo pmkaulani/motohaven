@@ -1,19 +1,57 @@
 import crypto from "crypto";
 
 const SESSION_COOKIE_NAME = "motohaven_staff_session";
-const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
+// Shortened session lifetime to 24 hours (Finding R12)
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24; // 24 hours
 
-// Use configured secret or derive a fallback based on machine-environment
+// In-memory revocation set for revoked tokens (Finding R12)
+const revokedTokenSignatures = new Set<string>();
+
+/**
+ * Revokes a session token so it cannot be used again before natural expiry.
+ */
+export function revokeStaffSessionToken(token: string | undefined | null): void {
+  if (!token || typeof token !== "string") return;
+  const parts = token.split(".");
+  if (parts.length === 2 && parts[1]) {
+    revokedTokenSignatures.add(parts[1]);
+  }
+}
+
+/**
+ * Checks whether a token has been revoked.
+ */
+export function isTokenRevoked(token: string | undefined | null): boolean {
+  if (!token || typeof token !== "string") return true;
+  const parts = token.split(".");
+  if (parts.length !== 2 || !parts[1]) return true;
+  return revokedTokenSignatures.has(parts[1]);
+}
+
+/**
+ * Retrieves the cryptographic signing key for staff sessions (Finding R2).
+ * STRICT SECURITY REQUIREMENT:
+ * - In production: Refuses to start/sign unless STAFF_SESSION_SECRET is configured with >= 32 characters.
+ * - Never reuses STAFF_ADMIN_PASSWORD as the HMAC key.
+ */
 function getSessionSecret(): string {
-  const secret = process.env.STAFF_SESSION_SECRET || process.env.STAFF_ADMIN_PASSWORD;
-  if (secret && secret.length >= 16) {
-    return secret;
+  const configuredSecret = process.env.STAFF_SESSION_SECRET?.trim();
+
+  if (process.env.NODE_ENV === "production") {
+    if (!configuredSecret || configuredSecret.length < 32) {
+      throw new Error(
+        "CRITICAL SECURITY CONFIGURATION ERROR: STAFF_SESSION_SECRET must be configured with at least 32 random characters in production environment."
+      );
+    }
+    return configuredSecret;
   }
-  // Deterministic local development fallback; logs warning in production
-  if (process.env.NODE_ENV === "production" && !process.env.STAFF_SESSION_SECRET) {
-    console.warn("[SECURITY WARNING] STAFF_SESSION_SECRET is not configured in production environment!");
+
+  // Development/Test fallback only when NODE_ENV is not production
+  if (configuredSecret && configuredSecret.length >= 32) {
+    return configuredSecret;
   }
-  return secret || "motohaven-local-dev-hmac-secret-key-32b";
+
+  return "motohaven-local-dev-hmac-secret-key-min32chars";
 }
 
 export interface StaffSessionPayload {
@@ -47,7 +85,7 @@ export function createStaffSessionToken(email: string): string {
 
 /**
  * Verifies a signed HMAC session token.
- * Returns payload if valid and unexpired; returns null otherwise.
+ * Returns payload if valid, unexpired and unrevoked; returns null otherwise.
  */
 export function verifyStaffSessionToken(token: string | undefined | null): StaffSessionPayload | null {
   if (!token || typeof token !== "string") {
@@ -61,20 +99,25 @@ export function verifyStaffSessionToken(token: string | undefined | null): Staff
 
   const [payloadB64, signature] = parts;
 
-  // Constant-time HMAC comparison
-  const expectedSignature = crypto
-    .createHmac("sha256", getSessionSecret())
-    .update(payloadB64)
-    .digest("hex");
-
-  const sigBuffer = Buffer.from(signature, "hex");
-  const expectedBuffer = Buffer.from(expectedSignature, "hex");
-
-  if (sigBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
+  // Check revocation list
+  if (revokedTokenSignatures.has(signature)) {
     return null;
   }
 
   try {
+    // Constant-time HMAC comparison
+    const expectedSignature = crypto
+      .createHmac("sha256", getSessionSecret())
+      .update(payloadB64)
+      .digest("hex");
+
+    const sigBuffer = Buffer.from(signature, "hex");
+    const expectedBuffer = Buffer.from(expectedSignature, "hex");
+
+    if (sigBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
+      return null;
+    }
+
     const jsonStr = Buffer.from(payloadB64, "base64url").toString("utf-8");
     const payload: StaffSessionPayload = JSON.parse(jsonStr);
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { EnquiriesRepository } from "@/lib/repositories/enquiries";
 import { requireStaff, handleAuthError } from "@/lib/auth/guards";
-import { EnquiryStatus } from "@/types/enquiry";
+import { UpdateEnquiryStatusSchema } from "@/lib/validations/enquiry";
 
 export async function PATCH(
   req: NextRequest,
@@ -12,16 +12,24 @@ export async function PATCH(
     requireStaff(req);
 
     const body = await req.json();
-    const { status, notes } = body;
+    const parseResult = UpdateEnquiryStatusSchema.safeParse(body);
 
-    if (!status) {
-      return NextResponse.json({ error: "Enquiry status is required." }, { status: 400 });
+    if (!parseResult.success) {
+      return NextResponse.json(
+        {
+          error: "Invalid enquiry status update.",
+          details: parseResult.error.flatten().fieldErrors,
+        },
+        { status: 400 }
+      );
     }
+
+    const { status, notes } = parseResult.data;
 
     const updated = await EnquiriesRepository.updateStaffEnquiryStatus(
       params.id,
-      status as EnquiryStatus,
-      typeof notes === "string" ? notes.trim() : undefined
+      status,
+      notes
     );
 
     if (!updated) {

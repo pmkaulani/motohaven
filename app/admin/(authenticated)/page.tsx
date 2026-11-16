@@ -1,13 +1,19 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { LocalDB } from "@/lib/db/local-db";
+import { getStaffSession } from "@/lib/auth/guards";
 import { formatKSh } from "@/lib/config/dealership";
 import { PlusCircle, ArrowRight } from "lucide-react";
 
 export const revalidate = 0; // Dynamic server query
 
 export default function AdminDashboardPage() {
-  const metrics = LocalDB.getDashboardMetrics();
+  const session = getStaffSession();
+  if (!session) {
+    redirect("/admin/login");
+  }
+  const metrics = LocalDB.getDashboardMetrics(session);
 
   return (
     <div className="space-y-10">

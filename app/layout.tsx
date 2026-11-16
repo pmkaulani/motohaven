@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { DEALERSHIP_CONFIG } from "@/lib/config/dealership";
+import { DEALERSHIP_CONFIG, getSiteUrl } from "@/lib/config/dealership";
 
 export const metadata: Metadata = {
   title: `${DEALERSHIP_CONFIG.name} | Nairobi Car Dealership`,
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     "used cars nairobi",
     "buy car nairobi",
   ],
-  metadataBase: new URL("https://motohaven.co.ke"),
+  metadataBase: new URL(getSiteUrl()),
   openGraph: {
     title: `${DEALERSHIP_CONFIG.name} — Nairobi Car Dealership`,
     description: "Vehicles in stock at our Ngong Road showroom in Nairobi, Kenya.",

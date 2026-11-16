@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 import { Vehicle, VehicleFilterParams, PaginatedVehicles } from "@/types/vehicle";
 import { Enquiry, CreateEnquiryInput, EnquiryStatus } from "@/types/enquiry";
+import { StaffSessionPayload } from "@/lib/auth/session";
+import { AuthError } from "@/lib/auth/guards";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const DB_FILE = path.join(DATA_DIR, "motohaven_db.json");
@@ -186,36 +188,7 @@ const INITIAL_VEHICLES: Vehicle[] = [
   }
 ];
 
-const INITIAL_ENQUIRIES: Enquiry[] = [
-  {
-    id: "enq-101",
-    created_at: "2026-11-11T10:15:00.000Z",
-    customer_name: "Kenneth Otieno",
-    phone: "0722123456",
-    email: "kotieno@gmail.com",
-    vehicle_id: "7c3f9102-12a4-4f81-9b12-8924b1a8d001",
-    vehicle_name: "Toyota Land Cruiser Prado 2019",
-    vehicle_price: 6850000,
-    enquiry_type: "viewing",
-    preferred_date: "2026-11-14",
-    message: "I would like to come view the Prado this Friday afternoon at the Ngong Road showroom. Please let me know if 2 PM works.",
-    status: "New"
-  },
-  {
-    id: "enq-102",
-    created_at: "2026-11-11T11:45:00.000Z",
-    customer_name: "Wanjiku Mwangi",
-    phone: "0711987654",
-    email: "wanjiku.m@outlook.com",
-    vehicle_id: "8d4e0213-23b5-4a92-ac23-9035c2b9e112",
-    vehicle_name: "Mazda CX-5 2018",
-    vehicle_price: 3250000,
-    enquiry_type: "test_drive",
-    preferred_date: "2026-11-15",
-    message: "Interested in a test drive for the CX-5. Does the price include logbook transfer and NTSA inspection?",
-    status: "Contacted"
-  }
-];
+const INITIAL_ENQUIRIES: Enquiry[] = [];
 
 function ensureDbFile(): DatabaseSchema {
   if (!fs.existsSync(DATA_DIR)) {
@@ -502,7 +475,10 @@ export const LocalDB = {
     return enq;
   },
 
-  getDashboardMetrics() {
+  getDashboardMetrics(session?: StaffSessionPayload | null) {
+    if (!session || session.role !== "dealership_staff") {
+      throw new AuthError("Staff authentication required to view dashboard metrics.", 401);
+    }
     const db = ensureDbFile();
     const total = db.vehicles.length;
     const available = db.vehicles.filter((v) => v.status === "Available").length;

@@ -38,20 +38,58 @@ export function EnquiryModal({
   const messageId = useId();
   const honeypotId = useId();
 
-  // Reset state when opening or closing (Fixes Defect D9)
+  const modalRef = React.useRef<HTMLDivElement>(null);
+  const previouslyFocusedElement = React.useRef<HTMLElement | null>(null);
+
+  // Reset state and trap initial focus when opening (Finding R7)
   useEffect(() => {
     if (isOpen) {
       setEnquiryType(initialType);
       setSuccess(false);
       setErrorMessage("");
+      previouslyFocusedElement.current = document.activeElement as HTMLElement | null;
+
+      setTimeout(() => {
+        if (modalRef.current) {
+          const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length > 0) {
+            focusable[0].focus();
+          }
+        }
+      }, 50);
     }
   }, [isOpen, initialType]);
 
-  // Handle Escape key to close modal
+  // Handle Escape key and Tab focus trap (Finding R7)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
+      if (!isOpen) return;
+
+      if (e.key === "Escape") {
         handleClose();
+      }
+
+      if (e.key === "Tab" && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -69,6 +107,10 @@ export function EnquiryModal({
     setMessage("");
     setHoneypot("");
     onClose();
+
+    if (previouslyFocusedElement.current) {
+      previouslyFocusedElement.current.focus();
+    }
   };
 
   if (!isOpen) return null;
@@ -147,9 +189,9 @@ export function EnquiryModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="enquiry-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
     >
-      <div className="bg-white max-w-lg w-full p-6 shadow-2xl border border-border relative max-h-[90vh] overflow-y-auto">
+      <div ref={modalRef} className="bg-white max-w-lg w-full p-6 shadow-2xl border border-border relative max-h-[90vh] overflow-y-auto">
         <button
           type="button"
           onClick={handleClose}

@@ -39,7 +39,7 @@ export default function AboutPage() {
               Unlike open classifieds and broker marketplaces where listings may be phantom, outdated, or inflated, MotoHaven is a single dealership. Every vehicle displayed on our platform is physically held in our inventory on Ngong Road, Nairobi.
             </p>
             <p>
-              We believe car buying should be transparent. That means accurate photographs showing actual vehicle condition, clear year of manufacture, true odometer readings in kilometres, and upfront pricing in Kenyan Shillings.
+              We believe car buying should be transparent: clear year of manufacture, true odometer readings in kilometres, verifiable import and registration documentation, and upfront pricing in Kenyan Shillings. In-person showroom walkarounds and independent mechanic inspections are always welcome before any purchase commitment.
             </p>
             <p>
               Our sales team is on ground to answer questions, show original documentation, and coordinate physical viewings and test drives at your convenience.

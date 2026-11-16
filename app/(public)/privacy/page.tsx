@@ -62,7 +62,7 @@ export default function PrivacyPage() {
           <section className="space-y-2">
             <h2 className="text-base font-bold text-text-primary">4. Data Retention and Security</h2>
             <p>
-              Enquiries are retained only as long as necessary to complete your vehicle purchase or follow up on your showroom request. Staff access to customer lead data is password-protected, encrypted, and restricted to authorised showroom sales personnel.
+              Customer enquiry records are retained for a standard operational period of 90 days following your initial request or until your vehicle purchase transaction is completed. Access to enquiry submissions is restricted to authorized dealership personnel using session-authenticated staff credentials. Transmission of data between your browser and our servers is secured using Transport Layer Security (TLS/HTTPS).
             </p>
           </section>
 

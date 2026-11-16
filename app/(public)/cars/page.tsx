@@ -15,7 +15,7 @@ interface CarsPageProps {
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
-export const revalidate = 0; // Dynamic server query
+export const revalidate = 60; // 60-second CDN caching with on-demand staff revalidation (Finding R15)
 
 function getFirstString(val: string | string[] | undefined): string | undefined {
   if (Array.isArray(val)) {
@@ -109,7 +109,8 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
         {/* Filter Controls Toolbar (Unboxed, integrated) */}
         <InventoryFilters totalCount={total} />
 
-        {/* Vehicle Inventory Grid (Anti-Card: grid container is open whitespace, cards are vehicles only) */}
+        {/* Vehicle Inventory Grid (AX2 Heading Order Fix: semantic h2 section heading) */}
+        <h2 className="sr-only">Available vehicles in showroom</h2>
         {vehicles.length === 0 ? (
           <div className="py-16 text-center space-y-3">
             <p className="text-base font-semibold text-text-primary">

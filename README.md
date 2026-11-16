@@ -1,6 +1,6 @@
 # MotoHaven — Nairobi Dealership Website & Staff Portal
 
-MotoHaven is a production-ready website and inventory management system built specifically for an independent car dealership located on Ngong Road, Nairobi, Kenya.
+MotoHaven is a modern website and inventory management system built specifically for an independent car dealership located on Ngong Road, Nairobi, Kenya.
 
 ---
 
@@ -30,8 +30,8 @@ MotoHaven is a production-ready website and inventory management system built sp
 
 ### 2. Dealership Administration Portal (`/admin`)
 - **Staff Sign In (`/admin/login`):**
-  - Secure staff portal authentication.
-  - Default local test credentials: `admin@motohaven.co.ke` / `motohaven2026`.
+  - Secure staff portal authentication with rate-limited brute-force protection.
+  - Requires configured environment credentials (STAFF_ADMIN_EMAIL, STAFF_ADMIN_PASSWORD, and STAFF_SESSION_SECRET) as documented in .env.example.
 - **Operations Dashboard (`/admin`):**
   - Real-time stock counts: Total Stock, Available, Reserved, Sold, New Enquiries.
   - Recent inventory additions and incoming customer leads.

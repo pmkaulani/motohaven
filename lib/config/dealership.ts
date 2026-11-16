@@ -20,6 +20,14 @@ export const DEALERSHIP_CONFIG = {
   },
 };
 
+export function getSiteUrl(): string {
+  const url = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (url && (url.startsWith("http://") || url.startsWith("https://"))) {
+    return url.replace(/\/+$/, "");
+  }
+  return "https://motohaven.co.ke";
+}
+
 /**
  * Format raw number to Kenyan Shillings display (e.g. KSh 2,500,000)
  */

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { VehiclesRepository } from "@/lib/repositories/vehicles";
 import { requireStaff, handleAuthError } from "@/lib/auth/guards";
-import { VehicleCondition, Transmission, FuelType, VehicleStatus, BodyType } from "@/types/vehicle";
+import { CreateVehicleSchema } from "@/lib/validations/vehicle";
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,7 +19,10 @@ export async function GET(req: NextRequest) {
     const maxYear = searchParams.get("maxYear") ? Number(searchParams.get("maxYear")) : undefined;
     const sort = searchParams.get("sort") as any;
     const page = searchParams.get("page") ? Number(searchParams.get("page")) : 1;
-    const limit = searchParams.get("limit") ? Number(searchParams.get("limit")) : 12;
+
+    // Finding R17: Clamp limit strictly between 1 and 50
+    const rawLimit = searchParams.get("limit") ? Number(searchParams.get("limit")) : 12;
+    const limit = isNaN(rawLimit) ? 12 : Math.min(Math.max(rawLimit, 1), 50);
 
     const data = await VehiclesRepository.getPublishedVehicles({
       q,
@@ -48,75 +52,25 @@ export async function POST(req: NextRequest) {
     // 1. Guard endpoint: staff only
     requireStaff(req);
 
-    // 2. Validate input
+    // 2. Validate input with Zod schema (Finding R6)
     const body = await req.json();
-    const {
-      brand,
-      model,
-      trim,
-      year,
-      price,
-      condition,
-      engine_cc,
-      transmission,
-      fuel,
-      mileage,
-      body_type,
-      drivetrain,
-      origin,
-      description,
-      features,
-      stock_reference,
-      status,
-      photo_urls,
-      cover_photo,
-      location,
-      proof_records,
-    } = body;
+    const parseResult = CreateVehicleSchema.safeParse(body);
 
-    if (!brand || !model || !year || !price) {
+    if (!parseResult.success) {
       return NextResponse.json(
-        { error: "Make, model, year and price are required." },
+        {
+          error: "Invalid vehicle data.",
+          details: parseResult.error.flatten().fieldErrors,
+        },
         { status: 400 }
       );
     }
 
-    const numYear = Number(year);
-    const numPrice = Number(price);
-    const numMileage = Number(mileage) || 0;
-    const numEngineCc = Number(engine_cc) || 2000;
+    const vehicle = await VehiclesRepository.createVehicle(parseResult.data as any);
 
-    if (isNaN(numYear) || numYear < 1980 || numYear > new Date().getFullYear() + 2) {
-      return NextResponse.json({ error: "Invalid vehicle year." }, { status: 400 });
-    }
-
-    if (isNaN(numPrice) || numPrice <= 0) {
-      return NextResponse.json({ error: "Invalid vehicle price." }, { status: 400 });
-    }
-
-    const vehicle = await VehiclesRepository.createVehicle({
-      brand: String(brand).trim(),
-      model: String(model).trim(),
-      trim: trim ? String(trim).trim() : undefined,
-      year: numYear,
-      price: numPrice,
-      condition: (condition as VehicleCondition) || "Foreign Used",
-      engine_cc: numEngineCc,
-      transmission: (transmission as Transmission) || "Automatic",
-      fuel: (fuel as FuelType) || "Petrol",
-      mileage: numMileage,
-      body_type: (body_type as BodyType) || "Saloon",
-      drivetrain: drivetrain ? String(drivetrain).trim() : undefined,
-      origin: origin ? String(origin).trim() : undefined,
-      description: description ? String(description).trim() : undefined,
-      features: Array.isArray(features) ? features.map(String) : [],
-      stock_reference: stock_reference ? String(stock_reference).trim() : undefined,
-      status: (status as VehicleStatus) || "Available",
-      photo_urls: Array.isArray(photo_urls) && photo_urls.length > 0 ? photo_urls : ["/images/car-placeholder.jpg"],
-      cover_photo: cover_photo || (photo_urls && photo_urls[0]) || "/images/car-placeholder.jpg",
-      location: location || "Nairobi Showroom",
-      proof_records: proof_records || undefined,
-    });
+    // Finding R15: On-demand cache revalidation
+    revalidatePath("/cars");
+    revalidatePath("/");
 
     return NextResponse.json({ success: true, vehicle }, { status: 201 });
   } catch (error) {

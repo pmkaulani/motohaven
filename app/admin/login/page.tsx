@@ -42,7 +42,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background-secondary flex flex-col items-center justify-center p-4">
+    <main id="main-content" className="min-h-screen bg-background-secondary flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <Link href="/" className="font-extrabold text-xl text-text-primary tracking-tight">
@@ -126,6 +126,6 @@ export default function AdminLoginPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

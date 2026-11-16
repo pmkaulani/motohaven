@@ -1,5 +1,7 @@
 import React from "react";
+import { redirect } from "next/navigation";
 import { EnquiriesRepository } from "@/lib/repositories/enquiries";
+import { getStaffSession } from "@/lib/auth/guards";
 import { EnquiryStatusUpdater } from "@/components/admin/EnquiryStatusUpdater";
 import { Phone, MessageCircle, Calendar, Mail } from "lucide-react";
 import { toKenyanInternationalDigits } from "@/lib/config/dealership";
@@ -7,7 +9,12 @@ import { toKenyanInternationalDigits } from "@/lib/config/dealership";
 export const revalidate = 0; // Dynamic server query
 
 export default async function AdminEnquiriesPage() {
-  const enquiries = await EnquiriesRepository.getStaffEnquiries();
+  const session = getStaffSession();
+  if (!session) {
+    redirect("/admin/login");
+  }
+
+  const enquiries = await EnquiriesRepository.getStaffEnquiries(session);
 
   // Deterministic ordering: created_at DESC (Fixes Priority 1.7)
   enquiries.sort(

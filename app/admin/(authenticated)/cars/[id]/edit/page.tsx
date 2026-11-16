@@ -1,6 +1,7 @@
 import React from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { LocalDB } from "@/lib/db/local-db";
+import { getStaffSession } from "@/lib/auth/guards";
 import { VehicleForm } from "@/components/admin/VehicleForm";
 
 interface EditCarPageProps {
@@ -12,6 +13,11 @@ interface EditCarPageProps {
 export const revalidate = 0; // Dynamic server query
 
 export default function EditCarPage({ params }: EditCarPageProps) {
+  const session = getStaffSession();
+  if (!session) {
+    redirect("/admin/login");
+  }
+
   const vehicle = LocalDB.getVehicleById(params.id);
 
   if (!vehicle) {

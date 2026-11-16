@@ -1,6 +1,8 @@
 import { LocalDB } from "@/lib/db/local-db";
 import { Enquiry, EnquiryStatus } from "@/types/enquiry";
 import { VehiclesRepository } from "./vehicles";
+import { StaffSessionPayload } from "@/lib/auth/session";
+import { AuthError } from "@/lib/auth/guards";
 
 export interface CreateEnquiryInput {
   vehicle_id?: string;
@@ -24,9 +26,13 @@ const ALLOWED_STATUSES: EnquiryStatus[] = [
 
 export const EnquiriesRepository = {
   /**
-   * Retrieves all customer enquiries for authorized staff only.
+   * Retrieves all customer enquiries for authorized staff only (Finding R1).
+   * STRICT REQUIREMENT: Requires valid verified staff session.
    */
-  async getStaffEnquiries(): Promise<Enquiry[]> {
+  async getStaffEnquiries(session?: StaffSessionPayload | null): Promise<Enquiry[]> {
+    if (!session || session.role !== "dealership_staff") {
+      throw new AuthError("Staff authentication required to access customer enquiries.", 401);
+    }
     return LocalDB.getEnquiries();
   },
 
@@ -60,12 +66,12 @@ export const EnquiriesRepository = {
       throw new Error("Message must not exceed 2000 characters.");
     }
 
-    // 3. Server-side lookup of vehicle details (DO NOT TRUST CLIENT VEHICLE NAME/PRICE)
+    // 3. Server-side lookup of published vehicle details (Finding R9 fix: published-only lookup)
     let vehicle_name: string | undefined = undefined;
     let vehicle_price: number | undefined = undefined;
 
     if (input.vehicle_id) {
-      const vehicle = await VehiclesRepository.getStaffVehicleById(input.vehicle_id);
+      const vehicle = await VehiclesRepository.getPublishedVehicleById(input.vehicle_id);
       if (vehicle) {
         vehicle_name = `${vehicle.year} ${vehicle.brand} ${vehicle.model}`;
         vehicle_price = vehicle.price;

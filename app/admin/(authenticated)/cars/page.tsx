@@ -1,6 +1,8 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { VehiclesRepository } from "@/lib/repositories/vehicles";
+import { getStaffSession } from "@/lib/auth/guards";
 import { formatKSh } from "@/lib/config/dealership";
 import { PlusCircle, ExternalLink, Edit } from "lucide-react";
 import { VehicleStatusUpdater } from "@/components/admin/VehicleStatusUpdater";
@@ -8,7 +10,11 @@ import { VehicleStatusUpdater } from "@/components/admin/VehicleStatusUpdater";
 export const revalidate = 0; // Dynamic server query
 
 export default async function AdminCarsPage() {
-  const vehicles = await VehiclesRepository.getAllStaffVehicles();
+  const session = getStaffSession();
+  if (!session) {
+    redirect("/admin/login");
+  }
+  const vehicles = await VehiclesRepository.getAllStaffVehicles(session);
 
   return (
     <div className="space-y-6">
