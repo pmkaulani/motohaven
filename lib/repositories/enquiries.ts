@@ -1,20 +1,8 @@
 import { LocalDB } from "@/lib/db/local-db";
-import { Enquiry, EnquiryStatus } from "@/types/enquiry";
+import { Enquiry, EnquiryStatus, CreateEnquiryInput } from "@/types/enquiry";
 import { VehiclesRepository } from "./vehicles";
 import { StaffSessionPayload } from "@/lib/auth/session";
 import { AuthError } from "@/lib/auth/guards";
-
-export interface CreateEnquiryInput {
-  vehicle_id?: string;
-  customer_name: string;
-  phone: string;
-  email?: string;
-  enquiry_type?: "Viewing" | "Test Drive" | "General Question";
-  preferred_date?: string;
-  preferred_time?: string;
-  message?: string;
-  honeypot?: string; // Must be empty
-}
 
 const ALLOWED_STATUSES: EnquiryStatus[] = [
   "New",

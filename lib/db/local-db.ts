@@ -451,6 +451,7 @@ export const LocalDB = {
     const db = ensureDbFile();
     const newEnquiry: Enquiry = {
       ...input,
+      enquiry_type: input.enquiry_type || "General Question",
       id: `enq-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       created_at: new Date().toISOString(),
       status: "New",

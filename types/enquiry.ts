@@ -32,8 +32,10 @@ export interface CreateEnquiryInput {
   vehicle_id?: string;
   vehicle_name?: string;
   vehicle_price?: number;
-  enquiry_type: EnquiryType;
+  enquiry_type?: EnquiryType;
   preferred_date?: string;
   preferred_time?: string;
   message?: string;
+  honeypot?: string;
+  hp_contact?: string;
 }
