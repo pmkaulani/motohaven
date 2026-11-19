@@ -49,7 +49,7 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
   return (
     <div className="space-y-3">
       {/* Main Photograph Frame (4:3 aspect ratio) */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-background-secondary border border-border group">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-stone-100 border border-border group shadow-sm">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={safeImages[activeIndex]}
@@ -64,7 +64,7 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
             <button
               type="button"
               onClick={handlePrev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-white/90 text-text-primary hover:bg-white transition-opacity opacity-80 hover:opacity-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/95 text-text-primary hover:bg-white shadow-md transition-all opacity-85 hover:opacity-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Previous photograph"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -72,7 +72,7 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
             <button
               type="button"
               onClick={handleNext}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-white/90 text-text-primary hover:bg-white transition-opacity opacity-80 hover:opacity-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/95 text-text-primary hover:bg-white shadow-md transition-all opacity-85 hover:opacity-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Next photograph"
             >
               <ChevronRight className="w-5 h-5" />
@@ -82,13 +82,13 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
 
         {/* Counter & Fullscreen Trigger */}
         <div className="absolute bottom-3 right-3 flex items-center gap-2">
-          <span className="px-2.5 py-1 text-xs font-medium text-white bg-black/70">
+          <span className="px-3 py-1 text-xs font-medium text-white bg-black/70 backdrop-blur-sm rounded-full">
             {activeIndex + 1} / {safeImages.length}
           </span>
           <button
             type="button"
             onClick={() => setLightboxOpen(true)}
-            className="p-1.5 bg-black/70 text-white hover:bg-black transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
+            className="p-2 bg-black/70 backdrop-blur-sm text-white hover:bg-black rounded-full transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
             title="Full size view"
             aria-label="Open full size photo viewer"
           >
@@ -106,9 +106,9 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
               type="button"
               onClick={() => setActiveIndex(idx)}
               aria-label={`Show photo ${idx + 1} of ${safeImages.length}`}
-              className={`relative flex-shrink-0 w-20 sm:w-24 aspect-[4/3] overflow-hidden border-2 transition-all min-h-[44px] ${
+              className={`relative flex-shrink-0 w-20 sm:w-24 aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all min-h-[44px] ${
                 activeIndex === idx
-                  ? "border-text-primary"
+                  ? "border-text-primary shadow-sm"
                   : "border-border opacity-70 hover:opacity-100"
               }`}
             >
@@ -140,7 +140,7 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
             <img
               src={safeImages[activeIndex]}
               alt={`${vehicleTitle} - Photo ${activeIndex + 1} of ${safeImages.length}`}
-              className="max-w-full max-h-[80vh] object-contain border border-white/10"
+              className="max-w-full max-h-[80vh] object-contain rounded-2xl border border-white/10"
             />
 
             <div className="mt-4 flex items-center gap-4 text-white">
@@ -149,12 +149,12 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
                   type="button"
                   onClick={handlePrev}
                   aria-label="Previous photograph"
-                  className="p-2.5 bg-white/20 hover:bg-white/30 text-white min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  className="p-2.5 rounded-full bg-white/20 hover:bg-white/30 text-white min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
               )}
-              <span className="text-sm font-medium">
+              <span className="text-sm font-medium px-3 py-1 bg-white/10 rounded-full">
                 Photo {activeIndex + 1} of {safeImages.length}
               </span>
               {safeImages.length > 1 && (
@@ -162,7 +162,7 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
                   type="button"
                   onClick={handleNext}
                   aria-label="Next photograph"
-                  className="p-2.5 bg-white/20 hover:bg-white/30 text-white min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  className="p-2.5 rounded-full bg-white/20 hover:bg-white/30 text-white min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -171,7 +171,7 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
                 type="button"
                 onClick={() => setLightboxOpen(false)}
                 aria-label="Close photo preview"
-                className="ml-4 px-4 py-2 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white min-h-[44px] flex items-center gap-1.5"
+                className="ml-4 px-4 py-2 rounded-xl text-xs font-semibold bg-white/20 hover:bg-white/30 text-white min-h-[44px] flex items-center gap-1.5 transition-colors"
               >
                 <X className="w-4 h-4" />
                 <span>Close</span>

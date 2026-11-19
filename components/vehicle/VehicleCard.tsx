@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Vehicle } from "@/types/vehicle";
 import { formatKSh } from "@/lib/config/dealership";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -14,80 +14,74 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
   const isReserved = vehicle.status === "Reserved";
 
   return (
-    <article className="group bg-white border border-border flex flex-col overflow-hidden hover:border-text-primary/40 transition-colors">
-      {/* Photograph Container (Consistent 4:3 ratio) */}
+    <article className="group flex flex-col space-y-3.5">
+      {/* Photograph Container (Clean open image, no heavy card wrapper) */}
       <Link
         href={`/cars/${vehicle.slug}`}
         aria-label={`View details for ${vehicle.year} ${vehicle.brand} ${vehicle.model}`}
-        className="relative aspect-[4/3] w-full bg-background-secondary overflow-hidden block"
+        className="relative aspect-[16/10] w-full bg-stone-100 rounded-lg overflow-hidden block"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={coverImage}
           alt={`${vehicle.year} ${vehicle.brand} ${vehicle.model}`}
-          className={`w-full h-full object-cover transition-opacity group-hover:opacity-95 ${
-            isSold ? "grayscale" : ""
+          className={`w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 ${
+            isSold ? "grayscale opacity-70" : "opacity-95 group-hover:opacity-100"
           }`}
           loading="lazy"
         />
 
-        {/* Status indicator (Only shown for non-available states) */}
-        {(isSold || isReserved) && (
-          <div className="absolute top-3 right-3">
-            {isSold ? (
-              <span className="px-2 py-0.5 text-xs font-bold uppercase tracking-wider bg-red-700 text-white">
-                Sold
-              </span>
-            ) : (
-              <span className="px-2 py-0.5 text-xs font-semibold uppercase tracking-wider bg-amber-600 text-white">
-                Reserved
-              </span>
-            )}
+        {/* Quiet status tag (only if sold or reserved) */}
+        {isSold && (
+          <div className="absolute top-3 left-3 px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-stone-900 text-white">
+            Sold
+          </div>
+        )}
+        {isReserved && !isSold && (
+          <div className="absolute top-3 left-3 px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-amber-600 text-white">
+            Reserved
           </div>
         )}
       </Link>
 
-      {/* Card Details */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
-        <div>
-          {/* Year & Condition */}
-          <p className="text-xs text-text-secondary">
-            {vehicle.year} · {vehicle.condition}
-          </p>
+      {/* Details (Open, editorial typography) */}
+      <div className="space-y-1.5">
+        <p className="text-xs text-stone-500">
+          {vehicle.year} · {vehicle.condition} · {vehicle.body_type}
+        </p>
 
-          {/* Make and Model (Fixed min-height for alignment) */}
-          <h3 className="text-base sm:text-lg font-bold text-text-primary mt-1 leading-snug min-h-[2.75rem] line-clamp-2">
-            <Link href={`/cars/${vehicle.slug}`} className="hover:underline">
-              {vehicle.brand} {vehicle.model}
-              {vehicle.trim && (
-                <span className="text-sm font-normal text-text-secondary ml-1.5">
-                  {vehicle.trim}
-                </span>
-              )}
-            </Link>
-          </h3>
+        <h3 className="text-base sm:text-lg font-bold text-stone-900 tracking-tight leading-tight">
+          <Link href={`/cars/${vehicle.slug}`} className="hover:underline">
+            {vehicle.brand} {vehicle.model}
+            {vehicle.trim && (
+              <span className="font-normal text-stone-500 ml-1.5 text-sm sm:text-base">
+                {vehicle.trim}
+              </span>
+            )}
+          </Link>
+        </h3>
 
-          {/* Price - Lead visual hierarchy */}
-          <p className="text-xl sm:text-2xl font-extrabold text-text-primary tracking-tight mt-1.5">
+        <div className="flex items-baseline justify-between pt-1">
+          <p className="text-xl sm:text-2xl font-black text-stone-950 tracking-tight">
             {formatKSh(vehicle.price)}
           </p>
-
-          {/* Aligned Specifications Line */}
-          <p className="text-xs text-text-secondary mt-3 pt-3 border-t border-border-subtle line-clamp-1">
-            {vehicle.mileage.toLocaleString("en-KE")} km · {vehicle.transmission} · {vehicle.fuel} · {vehicle.engine_cc}cc
-          </p>
+          <span className="text-[11px] font-semibold text-stone-500">
+            Duty cleared
+          </span>
         </div>
 
-        {/* Quiet text link with arrow affordance (Replaced heavy black bar) */}
-        <div className="pt-1 flex items-center justify-between">
+        <p className="text-xs text-stone-500 pt-1">
+          {vehicle.mileage.toLocaleString("en-KE")} km · {vehicle.transmission} · {vehicle.fuel} · {vehicle.engine_cc}cc
+        </p>
+
+        <div className="pt-2">
           <Link
             href={`/cars/${vehicle.slug}`}
-            className="text-xs font-semibold text-text-primary group-hover:text-action hover:underline inline-flex items-center gap-1 min-h-[36px]"
+            className="text-xs font-semibold text-stone-900 hover:text-stone-600 inline-flex items-center gap-1.5"
           >
-            <span>View specifications</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <span>View car details</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
-          <span className="text-[11px] text-text-secondary">Ngong Road</span>
         </div>
       </div>
     </article>

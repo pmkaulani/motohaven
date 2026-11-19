@@ -122,7 +122,7 @@ export default function ContactPage() {
                 href={buildGeneralWhatsAppUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-btn bg-brand-whatsapp text-white text-sm font-semibold hover:bg-brand-whatsappHover transition-colors"
+                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 rounded-xl bg-brand-whatsapp text-white text-sm font-semibold hover:bg-brand-whatsappHover transition-colors min-h-[44px] shadow-sm"
               >
                 <MessageCircle className="w-4 h-4 fill-current" />
                 <span>Chat on WhatsApp</span>
@@ -169,7 +169,7 @@ export default function ContactPage() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4 text-sm">
                 {errorMsg && (
-                  <div className="p-3 rounded bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                  <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{errorMsg}</span>
                   </div>
@@ -185,7 +185,7 @@ export default function ContactPage() {
                     placeholder="e.g. Kenneth Otieno"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+                    className="w-full h-11 px-3 bg-white rounded-xl border border-stone-200 focus:border-text-primary focus:outline-none"
                   />
                 </div>
 
@@ -200,7 +200,7 @@ export default function ContactPage() {
                       placeholder="e.g. 0712 345678"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+                      className="w-full h-11 px-3 bg-white rounded-xl border border-stone-200 focus:border-text-primary focus:outline-none"
                     />
                   </div>
                   <div>
@@ -212,7 +212,7 @@ export default function ContactPage() {
                       placeholder="e.g. name@gmail.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full h-11 px-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+                      className="w-full h-11 px-3 bg-white rounded-xl border border-stone-200 focus:border-text-primary focus:outline-none"
                     />
                   </div>
                 </div>
@@ -227,7 +227,7 @@ export default function ContactPage() {
                     placeholder="Tell us what car you are interested in or any questions regarding viewing."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    className="w-full p-3 bg-white rounded-btn border border-border focus:border-text-primary focus:outline-none"
+                    className="w-full p-3 bg-white rounded-xl border border-stone-200 focus:border-text-primary focus:outline-none"
                   />
                 </div>
 
@@ -235,7 +235,7 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full sm:w-auto h-11 px-6 rounded-btn bg-action text-white text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50"
+                    className="w-full sm:w-auto h-11 px-6 rounded-xl bg-action text-white text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50 min-h-[44px]"
                   >
                     {submitting ? "Sending..." : "Submit Message"}
                   </button>

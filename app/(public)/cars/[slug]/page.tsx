@@ -80,7 +80,7 @@ export default async function VehicleDetailPage({ params }: VehiclePageProps) {
           </Link>
           <span>/</span>
           <Link href="/cars" className="hover:underline">
-            Cars for sale
+            The Collection
           </Link>
           <span>/</span>
           <span className="text-text-primary font-medium" aria-current="page">
@@ -88,38 +88,50 @@ export default async function VehicleDetailPage({ params }: VehiclePageProps) {
           </span>
         </nav>
 
-        {/* Clean Open Page Header (Unboxed, Anti-Card) */}
-        <div className="flex flex-col md:flex-row md:items-baseline justify-between gap-4 border-b border-border pb-6">
-          <div className="space-y-1">
+        {/* Clean Open Page Header (Showroom Exhibit Style) */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border pb-6">
+          <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-3">
               <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                {vehicle.year} · {vehicle.condition}
+                {vehicle.year} · {vehicle.condition} {vehicle.origin ? `· ${vehicle.origin}` : ""}
               </span>
               {isSold && (
-                <span className="px-2 py-0.5 text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
+                <span className="px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-stone-900 text-white">
                   Sold
                 </span>
               )}
-              {isReserved && (
-                <span className="px-2 py-0.5 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+              {isReserved && !isSold && (
+                <span className="px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-amber-600 text-white">
                   Reserved
                 </span>
               )}
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-text-primary tracking-tight">
+
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-text-primary tracking-tight">
               {vehicle.brand} {vehicle.model}
-              {vehicle.trim && <span className="font-normal text-text-secondary text-xl sm:text-2xl ml-2">{vehicle.trim}</span>}
+              {vehicle.trim && <span className="font-normal text-text-secondary text-2xl sm:text-3xl ml-2">{vehicle.trim}</span>}
             </h1>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-baseline gap-4 sm:gap-6">
+          {/* Right Side: High-Impact, Prominent Showroom Price Tag & Quiet Actions */}
+          <div className="flex flex-col items-start md:items-end gap-3 shrink-0">
             <div className="text-left md:text-right">
-              <p className="text-xs text-text-secondary">Dealership Price</p>
-              <p className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
+              <div className="flex items-center md:justify-end gap-2 mb-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                  Showroom Price
+                </span>
+                <span className="inline-flex items-center text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded">
+                  Duty Cleared
+                </span>
+              </div>
+              <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-stone-950 tracking-tight leading-none">
                 {formatKSh(vehicle.price)}
               </p>
             </div>
-            <VehicleShareActions vehicle={vehicle} />
+
+            <div className="pt-0.5">
+              <VehicleShareActions vehicle={vehicle} />
+            </div>
           </div>
         </div>
 
@@ -239,7 +251,7 @@ export default async function VehicleDetailPage({ params }: VehiclePageProps) {
                   </dl>
                 </>
               ) : (
-                <div className="bg-background-secondary p-4 border border-border text-xs text-text-secondary space-y-2">
+                <div className="bg-stone-50 p-4 sm:p-5 rounded-2xl border border-stone-200 text-xs text-text-secondary space-y-2">
                   <p>
                     Original documentation (import certificates, KRA duty clearance, and logbook transfer papers) are available for physical review at our showroom sales desk upon viewing.
                   </p>
@@ -303,27 +315,33 @@ export default async function VehicleDetailPage({ params }: VehiclePageProps) {
         )}
       </div>
 
-      {/* Mobile Sticky Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border p-3 px-4 md:hidden shadow-md flex items-center gap-3">
-        <a
-          href={`tel:${DEALERSHIP_CONFIG.phone.replace(/\s+/g, "")}`}
-          className="flex-1 h-11 border border-field bg-white text-text-primary text-xs font-semibold flex items-center justify-center gap-1.5"
-        >
-          <Phone className="w-4 h-4 text-text-secondary" />
-          <span>Call Desk</span>
-        </a>
-
-        {isAvailable && (
+      {/* Mobile Sticky Bottom Action Bar with Noticeable Price */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-border py-2.5 px-4 md:hidden shadow-lg flex items-center justify-between gap-3">
+        <div>
+          <span className="text-[10px] uppercase font-bold text-stone-500 tracking-wider block">Showroom Price</span>
+          <span className="text-base sm:text-lg font-black text-stone-950 leading-none">{formatKSh(vehicle.price)}</span>
+        </div>
+        <div className="flex items-center gap-2">
           <a
-            href={buildVehicleWhatsAppUrl(vehicle)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 h-11 bg-brand-whatsapp text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-brand-whatsappHover transition-colors"
+            href={`tel:${DEALERSHIP_CONFIG.phone.replace(/\s+/g, "")}`}
+            className="h-10 px-3.5 rounded-lg border border-stone-200 bg-white text-text-primary text-xs font-semibold flex items-center justify-center gap-1.5"
           >
-            <MessageCircle className="w-4 h-4 fill-current" />
-            <span>WhatsApp</span>
+            <Phone className="w-3.5 h-3.5 text-stone-500" />
+            <span>Call</span>
           </a>
-        )}
+
+          {isAvailable && (
+            <a
+              href={buildVehicleWhatsAppUrl(vehicle)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="h-10 px-4 rounded-lg bg-brand-whatsapp text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-brand-whatsappHover transition-colors shadow-sm"
+            >
+              <MessageCircle className="w-4 h-4 fill-current" />
+              <span>WhatsApp</span>
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );

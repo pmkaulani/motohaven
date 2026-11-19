@@ -7,8 +7,8 @@ import { InventoryFilters } from "@/components/inventory/InventoryFilters";
 import { VehicleFilterParams } from "@/types/vehicle";
 
 export const metadata: Metadata = {
-  title: "Cars for Sale in Nairobi | MotoHaven Showroom",
-  description: "Browse genuine cars currently in stock at MotoHaven on Ngong Road. Verified specifications, transparent pricing, and direct test-drive bookings.",
+  title: "The Showroom Collection | MotoHaven Nairobi",
+  description: "Browse hand-selected luxury, executive, and performance motorcars physically in stock at MotoHaven on Ngong Road. Verified provenance and private test-drives.",
 };
 
 interface CarsPageProps {
@@ -82,7 +82,7 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
 
   return (
     <div className="bg-white min-h-screen py-8 sm:py-12">
-      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Open Breadcrumb */}
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-text-secondary">
           <Link href="/" className="hover:underline">
@@ -90,18 +90,18 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
           </Link>
           <span>/</span>
           <span className="text-text-primary font-medium" aria-current="page">
-            Cars for sale
+            The Collection
           </span>
         </nav>
 
-        {/* Aligned Page Header (Unboxed, Anti-Card) */}
+        {/* Showroom Header */}
         <div className="border-b border-border pb-6 flex flex-col sm:flex-row sm:items-baseline justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
-              Cars for sale in Nairobi
+            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">
+              Showroom Inventory
             </h1>
-            <p className="text-sm text-text-secondary mt-1">
-              {total === 1 ? "1 vehicle currently in stock" : `${total} vehicles currently in stock`} at our Ngong Road showroom
+            <p className="text-sm text-text-secondary mt-1 max-w-xl">
+              {total === 1 ? "1 vehicle currently in stock" : `${total} vehicles currently in stock`} at our Ngong Road showroom. Fully pre-inspected, verified paperwork, and ready for physical inspection.
             </p>
           </div>
         </div>
@@ -122,7 +122,7 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
             <div className="pt-2">
               <Link
                 href="/cars"
-                className="inline-flex items-center justify-center px-4 py-2 text-xs font-semibold bg-action text-white hover:bg-action-hover transition-colors min-h-[40px]"
+                className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-semibold bg-action text-white hover:bg-action-hover transition-colors min-h-[44px]"
               >
                 Clear all filters
               </Link>
@@ -148,12 +148,12 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
               {page > 1 ? (
                 <Link
                   href={buildPageUrl(page - 1)}
-                  className="px-3 py-1.5 border border-field text-text-primary hover:bg-background-secondary transition-colors font-medium min-h-[36px] flex items-center"
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-text-primary hover:bg-stone-50 transition-colors font-medium min-h-[40px] flex items-center shadow-sm"
                 >
                   Previous
                 </Link>
               ) : (
-                <span className="px-3 py-1.5 border border-border text-text-secondary opacity-50 cursor-not-allowed min-h-[36px] flex items-center">
+                <span className="px-4 py-2 rounded-xl border border-stone-200 text-text-secondary opacity-50 cursor-not-allowed min-h-[40px] flex items-center">
                   Previous
                 </span>
               )}
@@ -161,12 +161,12 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
               {page < totalPages ? (
                 <Link
                   href={buildPageUrl(page + 1)}
-                  className="px-3 py-1.5 border border-field text-text-primary hover:bg-background-secondary transition-colors font-medium min-h-[36px] flex items-center"
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-text-primary hover:bg-stone-50 transition-colors font-medium min-h-[40px] flex items-center shadow-sm"
                 >
                   Next
                 </Link>
               ) : (
-                <span className="px-3 py-1.5 border border-border text-text-secondary opacity-50 cursor-not-allowed min-h-[36px] flex items-center">
+                <span className="px-4 py-2 rounded-xl border border-stone-200 text-text-secondary opacity-50 cursor-not-allowed min-h-[40px] flex items-center">
                   Next
                 </span>
               )}

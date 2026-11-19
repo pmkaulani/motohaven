@@ -22,7 +22,7 @@ export function EnquirySection({ vehicle }: EnquirySectionProps) {
   const isAvailable = vehicle.status === "Available" && !vehicle.sold;
 
   return (
-    <div className="bg-white p-6 border border-border space-y-5">
+    <div className="bg-white p-6 sm:p-7 rounded-2xl border border-border shadow-sm space-y-5">
       <div>
         <h3 className="text-base font-bold text-text-primary">
           Enquire About This Vehicle
@@ -39,7 +39,7 @@ export function EnquirySection({ vehicle }: EnquirySectionProps) {
             href={buildVehicleWhatsAppUrl(vehicle)}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full h-11 px-4 bg-brand-whatsapp text-white text-sm font-semibold hover:bg-brand-whatsappHover transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+            className="w-full h-11 px-4 rounded-xl bg-brand-whatsapp text-white text-sm font-semibold hover:bg-brand-whatsappHover transition-colors flex items-center justify-center gap-2 min-h-[44px] shadow-sm"
           >
             <MessageCircle className="w-4 h-4 fill-current" />
             <span>Chat on WhatsApp</span>
@@ -49,9 +49,9 @@ export function EnquirySection({ vehicle }: EnquirySectionProps) {
         {/* Direct Phone Call Button */}
         <a
           href={`tel:${DEALERSHIP_CONFIG.phone.replace(/\s+/g, "")}`}
-          className="w-full h-11 px-4 border border-field bg-white text-text-primary text-sm font-medium hover:bg-background-secondary transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+          className="w-full h-11 px-4 rounded-xl border border-border bg-white text-text-primary text-sm font-medium hover:bg-stone-50 transition-colors flex items-center justify-center gap-2 min-h-[44px]"
         >
-          <Phone className="w-4 h-4 text-text-secondary" />
+          <Phone className="w-4 h-4 text-stone-500" />
           <span>Call: {DEALERSHIP_CONFIG.phone}</span>
         </a>
 
@@ -60,10 +60,10 @@ export function EnquirySection({ vehicle }: EnquirySectionProps) {
           <button
             type="button"
             onClick={() => openEnquiry("Viewing")}
-            className="w-full h-11 px-4 border border-field bg-white text-text-primary text-sm font-medium hover:bg-background-secondary transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+            className="w-full h-11 px-4 rounded-xl bg-text-primary text-white text-sm font-semibold hover:bg-stone-800 transition-colors flex items-center justify-center gap-2 min-h-[44px] shadow-sm"
           >
-            <Calendar className="w-4 h-4 text-text-secondary" />
-            <span>Schedule Viewing / Test Drive</span>
+            <Calendar className="w-4 h-4" />
+            <span>Book Showroom Viewing</span>
           </button>
         )}
       </div>

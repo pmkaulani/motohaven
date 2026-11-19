@@ -19,7 +19,7 @@ export default function NotFound() {
         <div className="pt-4">
           <Link
             href="/cars"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-action text-white text-xs font-semibold hover:bg-action-hover transition-colors min-h-[40px]"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-action text-white text-xs font-semibold hover:bg-action-hover transition-colors min-h-[44px]"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Browse Available Showroom Stock</span>

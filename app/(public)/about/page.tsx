@@ -76,7 +76,7 @@ export default function AboutPage() {
                 href={buildGeneralWhatsAppUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-btn bg-brand-whatsapp text-white text-sm font-semibold hover:bg-brand-whatsappHover transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-whatsapp text-white text-sm font-semibold hover:bg-brand-whatsappHover transition-colors min-h-[44px] shadow-sm"
               >
                 <MessageCircle className="w-4 h-4 fill-current" />
                 <span>Chat with Sales Team</span>

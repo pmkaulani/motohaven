@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Vehicle } from "@/types/vehicle";
 import { formatKSh } from "@/lib/config/dealership";
-import { Share2, Check, Copy, MessageCircle } from "lucide-react";
+import { Check, Copy, MessageCircle } from "lucide-react";
 
 export function VehicleShareActions({ vehicle }: { vehicle: Vehicle }) {
   const [copied, setCopied] = useState(false);
@@ -16,7 +16,6 @@ export function VehicleShareActions({ vehicle }: { vehicle: Vehicle }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      // Fallback
       setCopied(false);
     }
   };
@@ -31,7 +30,7 @@ export function VehicleShareActions({ vehicle }: { vehicle: Vehicle }) {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Share vehicle on WhatsApp"
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-brand-whatsapp text-white hover:bg-brand-whatsappHover transition-colors min-h-[36px]"
+        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-brand-whatsapp text-white hover:bg-brand-whatsappHover transition-colors min-h-[38px]"
       >
         <MessageCircle className="w-3.5 h-3.5 fill-current" />
         <span>Share</span>
@@ -41,16 +40,16 @@ export function VehicleShareActions({ vehicle }: { vehicle: Vehicle }) {
         type="button"
         onClick={handleCopy}
         aria-label="Copy vehicle link to clipboard"
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-field bg-white text-text-primary hover:bg-background-secondary transition-colors min-h-[36px]"
+        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium border border-stone-200 bg-white text-text-primary hover:bg-stone-50 transition-colors min-h-[38px]"
       >
         {copied ? (
           <>
-            <Check className="w-3.5 h-3.5 text-brand-whatsapp" />
-            <span className="text-brand-whatsapp">Copied</span>
+            <Check className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="text-emerald-700 font-semibold">Copied</span>
           </>
         ) : (
           <>
-            <Copy className="w-3.5 h-3.5 text-text-secondary" />
+            <Copy className="w-3.5 h-3.5 text-stone-500" />
             <span>Copy link</span>
           </>
         )}

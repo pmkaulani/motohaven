@@ -42,7 +42,7 @@ export function QuickSearch({ inline = false }: QuickSearchProps) {
           id={brandId}
           value={brand}
           onChange={(e) => setBrand(e.target.value)}
-          className="w-full h-11 px-3 text-sm bg-white border border-field text-text-primary focus:border-text-primary"
+          className="w-full h-11 px-3 text-sm bg-white border border-stone-200 rounded-xl text-text-primary focus:border-text-primary"
         >
           <option value="">All Makes</option>
           <option value="Toyota">Toyota</option>
@@ -66,7 +66,7 @@ export function QuickSearch({ inline = false }: QuickSearchProps) {
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           placeholder="e.g. Prado, 320i, CX-5"
-          className="w-full h-11 px-3 text-sm bg-white border border-field text-text-primary placeholder:text-text-secondary focus:border-text-primary"
+          className="w-full h-11 px-3 text-sm bg-white border border-stone-200 rounded-xl text-text-primary placeholder:text-text-secondary focus:border-text-primary"
         />
       </div>
 
@@ -79,7 +79,7 @@ export function QuickSearch({ inline = false }: QuickSearchProps) {
           id={budgetId}
           value={maxPrice}
           onChange={(e) => setMaxPrice(e.target.value)}
-          className="w-full h-11 px-3 text-sm bg-white border border-field text-text-primary focus:border-text-primary"
+          className="w-full h-11 px-3 text-sm bg-white border border-stone-200 rounded-xl text-text-primary focus:border-text-primary"
         >
           <option value="">Any Budget</option>
           <option value="2500000">Up to KSh 2.5M</option>
@@ -94,7 +94,7 @@ export function QuickSearch({ inline = false }: QuickSearchProps) {
       <div className={inline ? "sm:col-span-3 pt-1" : ""}>
         <button
           type="submit"
-          className="w-full h-11 px-5 bg-action text-white text-sm font-semibold hover:bg-action-hover transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+          className="w-full h-11 px-5 rounded-xl bg-action text-white text-sm font-semibold hover:bg-action-hover transition-colors flex items-center justify-center gap-2 min-h-[44px] shadow-sm"
         >
           <Search className="w-4 h-4" />
           <span>Search Inventory</span>

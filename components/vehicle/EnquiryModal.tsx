@@ -191,12 +191,12 @@ export function EnquiryModal({
       aria-labelledby="enquiry-modal-title"
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
     >
-      <div ref={modalRef} className="bg-white max-w-lg w-full p-6 shadow-2xl border border-border relative max-h-[90vh] overflow-y-auto">
+      <div ref={modalRef} className="bg-white max-w-lg w-full p-6 sm:p-7 rounded-2xl shadow-2xl border border-stone-200 relative max-h-[90vh] overflow-y-auto">
         <button
           type="button"
           onClick={handleClose}
           aria-label="Close enquiry dialog"
-          className="absolute top-4 right-4 p-2 text-text-secondary hover:text-text-primary min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="absolute top-4 right-4 p-2 rounded-full hover:bg-stone-100 text-text-secondary hover:text-text-primary min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -225,7 +225,7 @@ export function EnquiryModal({
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-6 py-2.5 bg-action text-white text-xs font-semibold hover:bg-action-hover min-h-[44px]"
+                className="px-6 py-2.5 rounded-xl bg-action text-white text-xs font-semibold hover:bg-action-hover min-h-[44px]"
               >
                 Close Window
               </button>
@@ -243,11 +243,11 @@ export function EnquiryModal({
             </div>
 
             {/* Enquiry Type Switcher */}
-            <div className="grid grid-cols-3 gap-2 mb-4 p-1 bg-background-secondary border border-border text-xs font-semibold">
+            <div className="grid grid-cols-3 gap-1.5 mb-4 p-1 rounded-xl bg-stone-100 text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setEnquiryType("Viewing")}
-                className={`py-2 px-2 transition-colors min-h-[36px] ${
+                className={`py-2 px-2 rounded-lg transition-all min-h-[36px] ${
                   enquiryType === "Viewing"
                     ? "bg-white text-text-primary shadow-sm"
                     : "text-text-secondary hover:text-text-primary"
@@ -258,7 +258,7 @@ export function EnquiryModal({
               <button
                 type="button"
                 onClick={() => setEnquiryType("Test Drive")}
-                className={`py-2 px-2 transition-colors min-h-[36px] ${
+                className={`py-2 px-2 rounded-lg transition-all min-h-[36px] ${
                   enquiryType === "Test Drive"
                     ? "bg-white text-text-primary shadow-sm"
                     : "text-text-secondary hover:text-text-primary"
@@ -269,7 +269,7 @@ export function EnquiryModal({
               <button
                 type="button"
                 onClick={() => setEnquiryType("General Question")}
-                className={`py-2 px-2 transition-colors min-h-[36px] ${
+                className={`py-2 px-2 rounded-lg transition-all min-h-[36px] ${
                   enquiryType === "General Question"
                     ? "bg-white text-text-primary shadow-sm"
                     : "text-text-secondary hover:text-text-primary"
@@ -282,7 +282,7 @@ export function EnquiryModal({
             {errorMessage && (
               <div
                 role="alert"
-                className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2"
+                className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2"
               >
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{errorMessage}</span>
@@ -315,7 +315,7 @@ export function EnquiryModal({
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="e.g. Kenneth Otieno"
-                  className="w-full h-11 px-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
+                  className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-text-primary text-sm focus:border-text-primary"
                 />
               </div>
 
@@ -332,7 +332,7 @@ export function EnquiryModal({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="e.g. 0712 345 678"
-                  className="w-full h-11 px-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
+                  className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-text-primary text-sm focus:border-text-primary"
                 />
                 <span className="text-[11px] text-text-secondary mt-0.5 block">
                   Kenyan format: 07XX or 01XX or +254
@@ -350,7 +350,7 @@ export function EnquiryModal({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="kenneth@example.com"
-                  className="w-full h-11 px-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
+                  className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-text-primary text-sm focus:border-text-primary"
                 />
               </div>
 
@@ -365,7 +365,7 @@ export function EnquiryModal({
                       type="date"
                       value={preferredDate}
                       onChange={(e) => setPreferredDate(e.target.value)}
-                      className="w-full h-11 px-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
+                      className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-text-primary text-sm focus:border-text-primary"
                     />
                   </div>
                   <div>
@@ -376,7 +376,7 @@ export function EnquiryModal({
                       id={timeId}
                       value={preferredTime}
                       onChange={(e) => setPreferredTime(e.target.value)}
-                      className="w-full h-11 px-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
+                      className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-text-primary text-sm focus:border-text-primary"
                     >
                       <option value="">Any time</option>
                       <option value="Morning (9am - 12pm)">Morning (9am - 12pm)</option>
@@ -397,7 +397,7 @@ export function EnquiryModal({
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Ask about vehicle history, logbook, or arrange an inspection..."
-                  className="w-full p-3 bg-white border border-field text-text-primary text-sm focus:border-text-primary"
+                  className="w-full p-3 bg-white border border-stone-200 rounded-xl text-text-primary text-sm focus:border-text-primary"
                 />
               </div>
 
@@ -405,7 +405,7 @@ export function EnquiryModal({
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3 px-4 bg-action text-white text-xs font-semibold hover:bg-action-hover transition-colors flex items-center justify-center gap-2 disabled:opacity-50 min-h-[44px]"
+                  className="w-full py-3 px-4 rounded-xl bg-action text-white text-xs font-semibold hover:bg-action-hover transition-colors flex items-center justify-center gap-2 disabled:opacity-50 min-h-[44px]"
                 >
                   <span>{submitting ? "Sending Request..." : "Send Request to MotoHaven"}</span>
                 </button>
