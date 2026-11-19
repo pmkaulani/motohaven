@@ -67,7 +67,26 @@ async function verifyToken(token: string | undefined): Promise<boolean> {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Intercept all /admin routes except the public login page
+  // 1. CSRF Origin Verification on state-changing API and Form submissions
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
+    const origin = req.headers.get("origin");
+    const host = req.headers.get("host") || req.nextUrl.host;
+    if (origin) {
+      try {
+        const originHost = new URL(origin).host;
+        if (originHost !== host) {
+          return NextResponse.json(
+            { error: "Cross-site request forgery detected. Request rejected." },
+            { status: 403 }
+          );
+        }
+      } catch {
+        return NextResponse.json({ error: "Invalid origin header." }, { status: 403 });
+      }
+    }
+  }
+
+  // 2. Intercept all /admin routes except the public login page
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     const token = req.cookies.get("motohaven_staff_session")?.value;
     const isRsc = req.headers.get("rsc") === "1";
@@ -87,5 +106,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/:path*"],
 };

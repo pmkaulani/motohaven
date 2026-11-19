@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { Vehicle } from "@/types/vehicle";
 import { DEALERSHIP_CONFIG, buildVehicleWhatsAppUrl } from "@/lib/config/dealership";
 import { EnquiryModal } from "@/components/vehicle/EnquiryModal";
@@ -19,54 +20,75 @@ export function EnquirySection({ vehicle }: EnquirySectionProps) {
     setModalOpen(true);
   };
 
-  const isAvailable = vehicle.status === "Available" && !vehicle.sold;
+  const isSold = vehicle.status === "Sold" || vehicle.sold;
+  const isReserved = vehicle.status === "Reserved";
+  const isAvailable = vehicle.status === "Available" && !isSold && !isReserved;
 
   return (
     <div className="bg-white p-6 sm:p-7 rounded-2xl border border-border shadow-sm space-y-5">
-      <div>
-        <h3 className="text-base font-bold text-text-primary">
-          Enquire About This Vehicle
-        </h3>
-        <p className="text-sm text-text-secondary mt-1 leading-relaxed">
-          Contact our showroom desk on Ngong Road directly or schedule an on-site viewing.
-        </p>
-      </div>
+      {isSold ? (
+        <div className="bg-stone-50 border border-stone-200 rounded-xl p-4.5 text-xs text-text-secondary space-y-2.5">
+          <p className="font-bold text-text-primary text-sm">Vehicle Sold</p>
+          <p className="leading-relaxed">
+            This motorcar has been delivered to its new owner and is no longer available for test drives or bookings.
+          </p>
+          <div className="pt-1">
+            <Link
+              href="/cars"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-900 hover:underline"
+            >
+              <span>Browse Current Showroom Collection</span> &rarr;
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div>
+            <h3 className="text-base font-bold text-text-primary">
+              {isReserved ? "Vehicle Under Reservation" : "Enquire About This Vehicle"}
+            </h3>
+            <p className="text-sm text-text-secondary mt-1 leading-relaxed">
+              {isReserved
+                ? "This unit is under temporary reservation. Contact our showroom desk if you wish to be notified should the vehicle become available."
+                : "Contact our showroom desk on Ngong Road directly or schedule an on-site viewing."}
+            </p>
+          </div>
 
-      <div className="space-y-3 pt-1">
-        {/* Official WhatsApp Button */}
-        {isAvailable && (
-          <a
-            href={buildVehicleWhatsAppUrl(vehicle)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full h-11 px-4 rounded-xl bg-brand-whatsapp text-white text-sm font-semibold hover:bg-brand-whatsappHover transition-colors flex items-center justify-center gap-2 min-h-[44px] shadow-sm"
-          >
-            <MessageCircle className="w-4 h-4 fill-current" />
-            <span>Chat on WhatsApp</span>
-          </a>
-        )}
+          <div className="space-y-3 pt-1">
+            {/* Official WhatsApp Button */}
+            <a
+              href={buildVehicleWhatsAppUrl(vehicle)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full h-11 px-4 rounded-xl bg-brand-whatsapp text-white text-sm font-semibold hover:bg-brand-whatsappHover transition-colors flex items-center justify-center gap-2 min-h-[44px] shadow-sm"
+            >
+              <MessageCircle className="w-4 h-4 fill-current" />
+              <span>{isReserved ? "WhatsApp Showroom (Hold Inquiry)" : "Chat on WhatsApp"}</span>
+            </a>
 
-        {/* Direct Phone Call Button */}
-        <a
-          href={`tel:${DEALERSHIP_CONFIG.phone.replace(/\s+/g, "")}`}
-          className="w-full h-11 px-4 rounded-xl border border-border bg-white text-text-primary text-sm font-medium hover:bg-stone-50 transition-colors flex items-center justify-center gap-2 min-h-[44px]"
-        >
-          <Phone className="w-4 h-4 text-stone-500" />
-          <span>Call: {DEALERSHIP_CONFIG.phone}</span>
-        </a>
+            {/* Direct Phone Call Button */}
+            <a
+              href={`tel:${DEALERSHIP_CONFIG.phone.replace(/\s+/g, "")}`}
+              className="w-full h-11 px-4 rounded-xl border border-border bg-white text-text-primary text-sm font-medium hover:bg-stone-50 transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+            >
+              <Phone className="w-4 h-4 text-stone-500" />
+              <span>Call: {DEALERSHIP_CONFIG.phone}</span>
+            </a>
 
-        {/* Request Viewing / Test Drive Modal Trigger */}
-        {isAvailable && (
-          <button
-            type="button"
-            onClick={() => openEnquiry("Viewing")}
-            className="w-full h-11 px-4 rounded-xl bg-text-primary text-white text-sm font-semibold hover:bg-stone-800 transition-colors flex items-center justify-center gap-2 min-h-[44px] shadow-sm"
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Book Showroom Viewing</span>
-          </button>
-        )}
-      </div>
+            {/* Request Viewing / Test Drive Modal Trigger (Available only) */}
+            {isAvailable && (
+              <button
+                type="button"
+                onClick={() => openEnquiry("Viewing")}
+                className="w-full h-11 px-4 rounded-xl bg-text-primary text-white text-sm font-semibold hover:bg-stone-800 transition-colors flex items-center justify-center gap-2 min-h-[44px] shadow-sm"
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Book Showroom Viewing</span>
+              </button>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Showroom Working Hours */}
       <div className="pt-4 border-t border-border text-xs text-text-secondary space-y-1">

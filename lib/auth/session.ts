@@ -4,17 +4,27 @@ const SESSION_COOKIE_NAME = "motohaven_staff_session";
 // Shortened session lifetime to 24 hours (Finding R12)
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24; // 24 hours
 
-// In-memory revocation set for revoked tokens (Finding R12)
-const revokedTokenSignatures = new Set<string>();
+// Token hash revocation set (Finding R12 / Residual Section 5)
+const revokedTokenHashes = new Set<string>();
+
+/**
+ * Computes a SHA-256 hash of a session token for secure storage & indexing.
+ */
+export function hashToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
 
 /**
  * Revokes a session token so it cannot be used again before natural expiry.
+ * Stores only token hash, never raw token.
  */
 export function revokeStaffSessionToken(token: string | undefined | null): void {
   if (!token || typeof token !== "string") return;
+  const hash = hashToken(token);
+  revokedTokenHashes.add(hash);
   const parts = token.split(".");
   if (parts.length === 2 && parts[1]) {
-    revokedTokenSignatures.add(parts[1]);
+    revokedTokenHashes.add(parts[1]);
   }
 }
 
@@ -23,9 +33,11 @@ export function revokeStaffSessionToken(token: string | undefined | null): void 
  */
 export function isTokenRevoked(token: string | undefined | null): boolean {
   if (!token || typeof token !== "string") return true;
+  const hash = hashToken(token);
+  if (revokedTokenHashes.has(hash)) return true;
   const parts = token.split(".");
-  if (parts.length !== 2 || !parts[1]) return true;
-  return revokedTokenSignatures.has(parts[1]);
+  if (parts.length === 2 && parts[1] && revokedTokenHashes.has(parts[1])) return true;
+  return false;
 }
 
 /**
@@ -100,7 +112,7 @@ export function verifyStaffSessionToken(token: string | undefined | null): Staff
   const [payloadB64, signature] = parts;
 
   // Check revocation list
-  if (revokedTokenSignatures.has(signature)) {
+  if (isTokenRevoked(token)) {
     return null;
   }
 

@@ -60,11 +60,11 @@ export function VehicleForm({ initialVehicle, isEditing = false }: Props) {
   const [featuresInput, setFeaturesInput] = useState(initialVehicle?.features?.join(", ") || "");
 
   // Proof / Paperwork records
-  const [mileageSource, setMileageSource] = useState(initialVehicle?.proof_records?.mileage_source || "Recorded at showroom check");
-  const [exportSheetStatus, setExportSheetStatus] = useState(initialVehicle?.proof_records?.export_sheet_status || "Provided");
-  const [chassisCheckStatus, setChassisCheckStatus] = useState(initialVehicle?.proof_records?.chassis_check_status || "Staff checked");
-  const [logbookStatus, setLogbookStatus] = useState(initialVehicle?.proof_records?.logbook_status || "Available at showroom");
-  const [dutyStatus, setDutyStatus] = useState(initialVehicle?.proof_records?.duty_status || "Fully paid / duty cleared");
+  const [mileageSource, setMileageSource] = useState(initialVehicle?.proof_records?.mileage_source || "");
+  const [exportSheetStatus, setExportSheetStatus] = useState(initialVehicle?.proof_records?.export_sheet_status || "Not supplied");
+  const [chassisCheckStatus, setChassisCheckStatus] = useState(initialVehicle?.proof_records?.chassis_check_status || "Not checked");
+  const [logbookStatus, setLogbookStatus] = useState(initialVehicle?.proof_records?.logbook_status || "Not checked");
+  const [dutyStatus, setDutyStatus] = useState(initialVehicle?.proof_records?.duty_status || "Not checked");
 
   const [photoUrls, setPhotoUrls] = useState<string[]>(initialVehicle?.photo_urls || []);
   const [coverPhoto, setCoverPhoto] = useState<string>(initialVehicle?.cover_photo || initialVehicle?.photo_urls?.[0] || "");
@@ -131,10 +131,60 @@ export function VehicleForm({ initialVehicle, isEditing = false }: Props) {
       .map((f) => f.trim())
       .filter(Boolean);
 
+    const nowIso = new Date().toISOString();
     const proof_records: VehicleProofRecords = {
-      mileage_source: mileageSource || undefined,
+      mileage: mileageSource.trim()
+        ? {
+            status: "verified",
+            sourceLabel: mileageSource.trim(),
+            checkedAt: initialVehicle?.proof_records?.mileage?.checkedAt || nowIso,
+            evidencePath: initialVehicle?.proof_records?.mileage?.evidencePath || "showroom-physical-check",
+          }
+        : { status: "not_checked" },
+      exportSheet: {
+        status: exportSheetStatus === "Provided" ? "verified" : exportSheetStatus === "Not applicable" ? "not_applicable" : "not_supplied",
+        sourceLabel: exportSheetStatus,
+        ...(exportSheetStatus === "Provided"
+          ? {
+              checkedAt: initialVehicle?.proof_records?.exportSheet?.checkedAt || nowIso,
+              evidencePath: initialVehicle?.proof_records?.exportSheet?.evidencePath || "auction-sheet-archive",
+            }
+          : {}),
+      },
+      chassisCheck: {
+        status: chassisCheckStatus === "Staff checked" ? "verified" : chassisCheckStatus === "Not supplied" ? "not_supplied" : "not_checked",
+        sourceLabel: chassisCheckStatus,
+        ...(chassisCheckStatus === "Staff checked"
+          ? {
+              checkedAt: initialVehicle?.proof_records?.chassis_checked_date || nowIso,
+              evidencePath: initialVehicle?.proof_records?.chassisCheck?.evidencePath || "chassis-vin-check-archive",
+            }
+          : {}),
+      },
+      logbook: {
+        status: logbookStatus === "Available at showroom" ? "verified" : logbookStatus === "In processing" ? "pending" : "not_checked",
+        sourceLabel: logbookStatus,
+        ...(logbookStatus === "Available at showroom"
+          ? {
+              checkedAt: initialVehicle?.proof_records?.logbook?.checkedAt || nowIso,
+              evidencePath: initialVehicle?.proof_records?.logbook?.evidencePath || "logbook-physical-file",
+            }
+          : {}),
+      },
+      dutyStatus: {
+        status: dutyStatus === "Fully paid / duty cleared" ? "verified" : "not_checked",
+        sourceLabel: dutyStatus,
+        ...(dutyStatus === "Fully paid / duty cleared"
+          ? {
+              checkedAt: initialVehicle?.proof_records?.dutyStatus?.checkedAt || nowIso,
+              evidencePath: initialVehicle?.proof_records?.dutyStatus?.evidencePath || "kra-duty-cleared-receipt",
+            }
+          : {}),
+      },
+      mileage_source: mileageSource.trim() || undefined,
       export_sheet_status: exportSheetStatus as any,
       chassis_check_status: chassisCheckStatus as any,
+      chassis_checked_date: chassisCheckStatus === "Staff checked" ? (initialVehicle?.proof_records?.chassis_checked_date || nowIso) : undefined,
       logbook_status: logbookStatus as any,
       duty_status: dutyStatus as any,
     };
@@ -457,8 +507,8 @@ export function VehicleForm({ initialVehicle, isEditing = false }: Props) {
                 onChange={(e) => setExportSheetStatus(e.target.value as any)}
                 className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               >
-                <option value="Provided">Provided</option>
                 <option value="Not supplied">Not supplied</option>
+                <option value="Provided">Provided</option>
                 <option value="Not applicable">Not applicable</option>
               </select>
             </div>
@@ -473,8 +523,8 @@ export function VehicleForm({ initialVehicle, isEditing = false }: Props) {
                 onChange={(e) => setChassisCheckStatus(e.target.value as any)}
                 className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               >
-                <option value="Staff checked">Staff checked</option>
                 <option value="Not checked">Not checked</option>
+                <option value="Staff checked">Staff checked</option>
                 <option value="Not supplied">Not supplied</option>
               </select>
             </div>
@@ -489,6 +539,7 @@ export function VehicleForm({ initialVehicle, isEditing = false }: Props) {
                 onChange={(e) => setLogbookStatus(e.target.value as any)}
                 className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               >
+                <option value="Not checked">Not checked</option>
                 <option value="Available at showroom">Available at showroom</option>
                 <option value="In processing">In processing</option>
                 <option value="Duty cleared, awaiting transfer">Duty cleared, awaiting transfer</option>
@@ -505,6 +556,7 @@ export function VehicleForm({ initialVehicle, isEditing = false }: Props) {
                 onChange={(e) => setDutyStatus(e.target.value as any)}
                 className="w-full h-11 px-3 bg-white border border-field text-text-primary focus:border-text-primary"
               >
+                <option value="Not checked">Not checked</option>
                 <option value="Fully paid / duty cleared">Fully paid / duty cleared</option>
                 <option value="In bond / subject to duty">In bond / subject to duty</option>
                 <option value="Locally registered">Locally registered</option>

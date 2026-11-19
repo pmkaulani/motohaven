@@ -88,32 +88,47 @@ console.log("==> Test Group 2: JSON Database Safety & Resilience");
   console.log("  ✓ Corrupt DB throws critical error and preserves disk content without wiping.");
 }
 
-// 3. Draft and Archived direct URL isolation logic
-console.log("==> Test Group 3: Draft / Archived Vehicle Isolation");
+// 3. Draft and Archived direct URL isolation logic & Truthful Visibility Policy
+console.log("==> Test Group 3: Truthful Visibility & Vehicle Status Policy");
 {
-  const testVehicles = [
-    { id: "1", slug: "toyota-land-cruiser-prado-tx-2021", status: "Available" },
-    { id: "2", slug: "mercedes-benz-c200-amg-2020", status: "Reserved" },
-    { id: "3", slug: "subaru-forester-xt-2018", status: "Sold" },
-    { id: "4", slug: "secret-draft-car-2024", status: "Draft" },
-    { id: "5", slug: "old-archived-car-2015", status: "Archived" },
-  ];
+  const { isPublicVehicleStatus, canAcceptVehicleEnquiry } = await import("../lib/repositories/visibility.ts");
 
-  function getPublishedVehicleBySlug(slug) {
-    const v = testVehicles.find((x) => x.slug === slug);
-    if (!v) return null;
-    if (v.status === "Draft" || v.status === "Archived") {
-      return null;
-    }
-    return v;
-  }
+  assert.equal(isPublicVehicleStatus("Available"), true, "Available must be public");
+  assert.equal(isPublicVehicleStatus("Reserved"), true, "Reserved must be public");
+  assert.equal(isPublicVehicleStatus("Sold"), true, "Sold must be publicly viewable");
+  assert.equal(isPublicVehicleStatus("Draft"), false, "Draft MUST return false (404)");
+  assert.equal(isPublicVehicleStatus("Archived"), false, "Archived MUST return false (404)");
 
-  assert.ok(getPublishedVehicleBySlug("toyota-land-cruiser-prado-tx-2021"), "Available car must be returned");
-  assert.ok(getPublishedVehicleBySlug("mercedes-benz-c200-amg-2020"), "Reserved car must be returned");
-  assert.ok(getPublishedVehicleBySlug("subaru-forester-xt-2018"), "Sold car must be returned");
-  assert.equal(getPublishedVehicleBySlug("secret-draft-car-2024"), null, "Draft car MUST return null (404)");
-  assert.equal(getPublishedVehicleBySlug("old-archived-car-2015"), null, "Archived car MUST return null (404)");
-  console.log("  ✓ Public vehicle getter returns null (404) for Draft and Archived vehicles.");
+  assert.equal(canAcceptVehicleEnquiry("Available"), true, "Available can accept enquiry");
+  assert.equal(canAcceptVehicleEnquiry("Reserved"), true, "Reserved can accept enquiry");
+  assert.equal(canAcceptVehicleEnquiry("Sold"), false, "Sold MUST NOT accept booking enquiry");
+  assert.equal(canAcceptVehicleEnquiry("Draft"), false, "Draft MUST NOT accept enquiry");
+  assert.equal(canAcceptVehicleEnquiry("Archived"), false, "Archived MUST NOT accept enquiry");
+  console.log("  ✓ Shared visibility policy correctly gates public access and enquiry submission.");
+}
+
+// 3b. Vehicle Evidence Record Invariants
+console.log("==> Test Group 3b: Truthful Evidence & Proof Invariants");
+{
+  const { EvidenceRecordInputSchema } = await import("../lib/validations/vehicle.ts");
+
+  // Neutral states pass without evidence
+  assert.ok(EvidenceRecordInputSchema.safeParse({ status: "not_checked" }).success);
+  assert.ok(EvidenceRecordInputSchema.safeParse({ status: "not_supplied" }).success);
+  assert.ok(EvidenceRecordInputSchema.safeParse({ status: "pending" }).success);
+
+  // Positive claim "verified" WITHOUT evidence MUST FAIL
+  const missingEvidence = EvidenceRecordInputSchema.safeParse({ status: "verified" });
+  assert.equal(missingEvidence.success, false, "Verified claim without evidence reference must fail");
+
+  // Positive claim "verified" WITH evidence & date PASSES
+  const validVerified = EvidenceRecordInputSchema.safeParse({
+    status: "verified",
+    evidencePath: "evidence-docs/inspection-123.jpg",
+    checkedAt: new Date().toISOString(),
+  });
+  assert.ok(validVerified.success, "Verified claim with evidence and timestamp must pass");
+  console.log("  ✓ Strict evidence invariants enforce that positive claims cannot be saved without proof.");
 }
 
 // 4. Repeated query parameter normalizer
@@ -160,10 +175,18 @@ console.log("==> Test Group 5: Magic Bytes File Upload Validation");
 // 6. HTTP Integration tests against Next.js production server
 console.log("==> Test Group 6: Next.js HTTP Integration & Route Protection Tests");
 
+const rootDir = process.cwd();
 const PORT = 3019;
 let serverProcess = null;
 
 async function runHttpTests() {
+  const buildIdPath = path.join(rootDir, ".next", "BUILD_ID");
+  if (!fs.existsSync(buildIdPath)) {
+    console.log("  No production build detected in .next. Building Next.js application first...");
+    const { execSync } = await import("node:child_process");
+    execSync("npx next build", { cwd: rootDir, stdio: "inherit" });
+  }
+
   console.log(`  Starting Next.js production server on port ${PORT}...`);
   serverProcess = spawn("node", ["./node_modules/next/dist/bin/next", "start", "-p", String(PORT)], {
     shell: true,

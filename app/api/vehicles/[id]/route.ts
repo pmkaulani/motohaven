@@ -16,7 +16,9 @@ export async function GET(
     if (isStaff) {
       vehicle = await VehiclesRepository.getStaffVehicleById(params.id);
     } else {
-      vehicle = await VehiclesRepository.getPublishedVehicleBySlug(params.id);
+      vehicle =
+        (await VehiclesRepository.getPublishedVehicleBySlug(params.id)) ||
+        (await VehiclesRepository.getPublishedVehicleById(params.id));
     }
 
     if (!vehicle) {
@@ -36,7 +38,7 @@ export async function PATCH(
 ) {
   try {
     // 1. Guard endpoint: staff only
-    requireStaff(req);
+    const staff = requireStaff(req);
 
     // 2. Validate input using Zod schema (Finding R6)
     const body = await req.json();
@@ -52,7 +54,36 @@ export async function PATCH(
       );
     }
 
-    const updated = await VehiclesRepository.updateVehicle(params.id, parseResult.data as any);
+    const updateData: any = { ...parseResult.data };
+    if (updateData.proof_records) {
+      const records = updateData.proof_records;
+      const nowIso = new Date().toISOString();
+      const existing = await VehiclesRepository.getStaffVehicleById(params.id);
+      const auditEntries: any[] = Array.isArray(existing?.proof_records?.history)
+        ? [...existing.proof_records.history]
+        : [];
+
+      const updatedProof: any = { ...existing?.proof_records, ...records };
+      for (const [key, val] of Object.entries(records)) {
+        if (val && typeof val === "object" && "status" in val && (val as any).status === "verified") {
+          updatedProof[key] = {
+            ...(val as any),
+            checkedBy: staff.email,
+            checkedAt: (val as any).checkedAt || nowIso,
+          };
+          auditEntries.push({
+            timestamp: nowIso,
+            actor: staff.email,
+            action: "VERIFY_PROOF",
+            field: key,
+          });
+        }
+      }
+      updatedProof.history = auditEntries;
+      updateData.proof_records = updatedProof;
+    }
+
+    const updated = await VehiclesRepository.updateVehicle(params.id, updateData);
     if (!updated) {
       return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });
     }

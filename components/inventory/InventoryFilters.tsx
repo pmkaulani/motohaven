@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useId } from "react";
+import React, { useState, useEffect, useId, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, X, RotateCcw } from "lucide-react";
 
@@ -20,8 +20,14 @@ export function InventoryFilters({ totalCount }: InventoryFiltersProps) {
   const conditionId = useId();
   const minPriceId = useId();
   const maxPriceId = useId();
+  const minYearId = useId();
+  const maxYearId = useId();
   const transmissionId = useId();
   const fuelId = useId();
+
+  // Refs for accessible focus management
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+  const drawerRef = useRef<HTMLDivElement | null>(null);
 
   // URL state
   const q = searchParams.get("q") || "";
@@ -65,16 +71,51 @@ export function InventoryFilters({ totalCount }: InventoryFiltersProps) {
     setLocalSort(sort);
   }, [q, brand, bodyType, condition, transmission, fuel, minPrice, maxPrice, minYear, maxYear, sort]);
 
-  // Close drawer on Escape key (Accessibility fix)
+  // Accessible Focus Management & Escape Handler
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && drawerOpen) {
-        setDrawerOpen(false);
+    if (drawerOpen) {
+      const drawer = drawerRef.current;
+      if (drawer) {
+        const focusable = drawer.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length > 0) {
+          focusable[0].focus();
+        }
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+          if (e.key === "Escape") {
+            setDrawerOpen(false);
+          } else if (e.key === "Tab") {
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey) {
+              if (document.activeElement === first) {
+                last.focus();
+                e.preventDefault();
+              }
+            } else {
+              if (document.activeElement === last) {
+                first.focus();
+                e.preventDefault();
+              }
+            }
+          }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
       }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    } else {
+      filterButtonRef.current?.focus();
+    }
   }, [drawerOpen]);
+
+  const removeYearFilter = () => {
+    setLocalMinYear("");
+    setLocalMaxYear("");
+    applyFilters({ minYear: "", maxYear: "" });
+  };
 
   const applyFilters = (overrides?: Record<string, string>) => {
     const params = new URLSearchParams();
@@ -177,6 +218,7 @@ export function InventoryFilters({ totalCount }: InventoryFiltersProps) {
         {/* Filter Button & Sort Controls (Side-by-side full width on mobile) */}
         <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
           <button
+            ref={filterButtonRef}
             type="button"
             onClick={() => setDrawerOpen(true)}
             aria-expanded={drawerOpen}
@@ -311,6 +353,19 @@ export function InventoryFilters({ totalCount }: InventoryFiltersProps) {
               </button>
             </span>
           )}
+          {(minYear || maxYear) && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 border border-stone-200 text-text-primary">
+              Year: {minYear ? minYear : "Any"} – {maxYear ? maxYear : "Any"}
+              <button
+                type="button"
+                onClick={removeYearFilter}
+                aria-label="Remove year range filter"
+                className="hover:text-red-700 p-0.5"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </span>
+          )}
           <button
             type="button"
             onClick={handleReset}
@@ -322,7 +377,7 @@ export function InventoryFilters({ totalCount }: InventoryFiltersProps) {
         </div>
       )}
 
-      {/* Filter Drawer (Accessible Dialog) */}
+      {/* Filter Drawer (Accessible Dialog with Focus Trap) */}
       {drawerOpen && (
         <div
           id="filter-drawer"
@@ -331,7 +386,10 @@ export function InventoryFilters({ totalCount }: InventoryFiltersProps) {
           aria-labelledby="filter-drawer-title"
           className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-black/40"
         >
-          <div className="relative w-full max-w-md bg-white h-full flex flex-col justify-between rounded-l-2xl sm:rounded-l-3xl border-l border-border shadow-2xl">
+          <div
+            ref={drawerRef}
+            className="relative w-full max-w-md bg-white h-full flex flex-col justify-between rounded-l-2xl sm:rounded-l-3xl border-l border-border shadow-2xl"
+          >
             {/* Drawer Header */}
             <div className="p-5 border-b border-border flex items-center justify-between">
               <div>
@@ -435,6 +493,40 @@ export function InventoryFilters({ totalCount }: InventoryFiltersProps) {
                       placeholder="Max KSh"
                       value={localMaxPrice}
                       onChange={(e) => setLocalMaxPrice(e.target.value)}
+                      className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-text-primary text-sm focus:border-text-primary"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <p className="block font-medium text-text-primary mb-1.5 text-xs">
+                  Year of Manufacture
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label htmlFor={minYearId} className="sr-only">Minimum year</label>
+                    <input
+                      id={minYearId}
+                      type="number"
+                      min={1990}
+                      max={2030}
+                      placeholder="Min Year (e.g. 2017)"
+                      value={localMinYear}
+                      onChange={(e) => setLocalMinYear(e.target.value)}
+                      className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-text-primary text-sm focus:border-text-primary"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor={maxYearId} className="sr-only">Maximum year</label>
+                    <input
+                      id={maxYearId}
+                      type="number"
+                      min={1990}
+                      max={2030}
+                      placeholder="Max Year (e.g. 2024)"
+                      value={localMaxYear}
+                      onChange={(e) => setLocalMaxYear(e.target.value)}
                       className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-text-primary text-sm focus:border-text-primary"
                     />
                   </div>

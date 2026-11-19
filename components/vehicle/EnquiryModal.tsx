@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useId } from "react";
+import React, { useState, useEffect, useId, useCallback } from "react";
 import { Vehicle } from "@/types/vehicle";
 import { formatKSh, isValidKenyanPhone } from "@/lib/config/dealership";
 import { X, CheckCircle2, AlertCircle } from "lucide-react";
@@ -62,6 +62,23 @@ export function EnquiryModal({
     }
   }, [isOpen, initialType]);
 
+  const handleClose = useCallback(() => {
+    setSuccess(false);
+    setErrorMessage("");
+    setCustomerName("");
+    setPhone("");
+    setEmail("");
+    setPreferredDate("");
+    setPreferredTime("");
+    setMessage("");
+    setHoneypot("");
+    onClose();
+
+    if (previouslyFocusedElement.current) {
+      previouslyFocusedElement.current.focus();
+    }
+  }, [onClose]);
+
   // Handle Escape key and Tab focus trap (Finding R7)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -94,24 +111,7 @@ export function EnquiryModal({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
-
-  const handleClose = () => {
-    setSuccess(false);
-    setErrorMessage("");
-    setCustomerName("");
-    setPhone("");
-    setEmail("");
-    setPreferredDate("");
-    setPreferredTime("");
-    setMessage("");
-    setHoneypot("");
-    onClose();
-
-    if (previouslyFocusedElement.current) {
-      previouslyFocusedElement.current.focus();
-    }
-  };
+  }, [isOpen, handleClose]);
 
   if (!isOpen) return null;
 

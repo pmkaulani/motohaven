@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // 1. Guard endpoint: staff only
-    requireStaff(req);
+    const staff = requireStaff(req);
 
     // 2. Validate input with Zod schema (Finding R6)
     const body = await req.json();
@@ -66,7 +66,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const vehicle = await VehiclesRepository.createVehicle(parseResult.data as any);
+    const vehicleData: any = { ...parseResult.data };
+    if (vehicleData.proof_records) {
+      const records = vehicleData.proof_records;
+      const nowIso = new Date().toISOString();
+      const updatedProof: any = { ...records };
+      const auditEntries: any[] = [];
+
+      for (const [key, val] of Object.entries(records)) {
+        if (val && typeof val === "object" && "status" in val && (val as any).status === "verified") {
+          updatedProof[key] = {
+            ...(val as any),
+            checkedBy: staff.email,
+            checkedAt: (val as any).checkedAt || nowIso,
+          };
+          auditEntries.push({
+            timestamp: nowIso,
+            actor: staff.email,
+            action: "VERIFY_PROOF",
+            field: key,
+          });
+        }
+      }
+      updatedProof.history = auditEntries;
+      vehicleData.proof_records = updatedProof;
+    }
+
+    const vehicle = await VehiclesRepository.createVehicle(vehicleData);
 
     // Finding R15: On-demand cache revalidation
     revalidatePath("/cars");

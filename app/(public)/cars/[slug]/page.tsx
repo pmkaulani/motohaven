@@ -64,9 +64,9 @@ export default async function VehicleDetailPage({ params }: VehiclePageProps) {
   }
 
   const similarVehicles = await VehiclesRepository.getSimilarVehicles(vehicle.id, 3);
-  const isAvailable = vehicle.status === "Available" && !vehicle.sold;
   const isSold = vehicle.status === "Sold" || vehicle.sold;
   const isReserved = vehicle.status === "Reserved";
+  const isAvailable = vehicle.status === "Available" && !isSold && !isReserved;
 
   const proof = vehicle.proof_records;
 
@@ -198,7 +198,7 @@ export default async function VehicleDetailPage({ params }: VehiclePageProps) {
               </dl>
             </div>
 
-            {/* Per-Car Proof & Paperwork Section (Finding R4 Fix) */}
+            {/* Per-Car Proof & Paperwork Section (Truthful Verification Gate) */}
             <div className="space-y-4 border-t border-border pt-6">
               <div className="flex items-center gap-2">
                 <FileCheck className="w-5 h-5 text-text-primary" />
@@ -206,60 +206,62 @@ export default async function VehicleDetailPage({ params }: VehiclePageProps) {
                   Showroom Verification & Paperwork
                 </h2>
               </div>
-              {proof && Object.values(proof).some((v) => typeof v === "string" && v.trim().length > 0) ? (
-                <>
-                  <p className="text-xs text-text-secondary">
-                    Factual verification records recorded for this specific vehicle:
-                  </p>
-                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-                    {proof?.mileage_source && (
-                      <div className="flex justify-between py-1.5 border-b border-border-subtle">
-                        <dt className="text-text-secondary">Odometer & Mileage</dt>
-                        <dd className="font-semibold text-text-primary">{proof.mileage_source}</dd>
-                      </div>
-                    )}
-                    {proof?.export_sheet_status && (
-                      <div className="flex justify-between py-1.5 border-b border-border-subtle">
-                        <dt className="text-text-secondary">Export / Inspection Sheet</dt>
-                        <dd className="font-semibold text-text-primary">{proof.export_sheet_status}</dd>
-                      </div>
-                    )}
-                    {proof?.chassis_check_status && (
-                      <div className="flex justify-between py-1.5 border-b border-border-subtle">
-                        <dt className="text-text-secondary">Chassis / VIN Status</dt>
-                        <dd className="font-semibold text-text-primary">{proof.chassis_check_status}</dd>
-                      </div>
-                    )}
-                    {proof?.duty_status && (
-                      <div className="flex justify-between py-1.5 border-b border-border-subtle">
-                        <dt className="text-text-secondary">Duty & Import Status</dt>
-                        <dd className="font-semibold text-text-primary">{proof.duty_status}</dd>
-                      </div>
-                    )}
-                    {proof?.logbook_status && (
-                      <div className="flex justify-between py-1.5 border-b border-border-subtle">
-                        <dt className="text-text-secondary">Logbook Transfer</dt>
-                        <dd className="font-semibold text-text-primary">{proof.logbook_status}</dd>
-                      </div>
-                    )}
-                    <div className="flex justify-between py-1.5 border-b border-border-subtle">
-                      <dt className="text-text-secondary">Independent Inspection</dt>
-                      <dd className="font-semibold text-text-primary">
-                        Welcome (mechanic or AA Kenya)
-                      </dd>
-                    </div>
-                  </dl>
-                </>
-              ) : (
-                <div className="bg-stone-50 p-4 sm:p-5 rounded-2xl border border-stone-200 text-xs text-text-secondary space-y-2">
-                  <p>
-                    Original documentation (import certificates, KRA duty clearance, and logbook transfer papers) are available for physical review at our showroom sales desk upon viewing.
-                  </p>
-                  <p className="font-medium text-text-primary">
-                    Independent mechanical and pre-purchase inspections (by your trusted mechanic or AA Kenya) are warmly welcomed before any commitment.
-                  </p>
+              <p className="text-xs text-text-secondary">
+                Factual verification status recorded for this specific vehicle:
+              </p>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+                <div className="flex justify-between py-1.5 border-b border-border-subtle">
+                  <dt className="text-text-secondary">Odometer & Mileage</dt>
+                  <dd className="font-semibold text-text-primary">
+                    {proof?.mileage?.status === "verified" || (proof?.mileage_source && proof.mileage_source.trim().length > 0)
+                      ? (proof?.mileage?.sourceLabel || proof?.mileage_source)
+                      : "Pending showroom check"}
+                  </dd>
                 </div>
-              )}
+
+                <div className="flex justify-between py-1.5 border-b border-border-subtle">
+                  <dt className="text-text-secondary">Export / Auction Sheet</dt>
+                  <dd className="font-semibold text-text-primary">
+                    {proof?.exportSheet?.status === "verified" || proof?.export_sheet_status === "Provided"
+                      ? "Provided for review"
+                      : "Not supplied"}
+                  </dd>
+                </div>
+
+                <div className="flex justify-between py-1.5 border-b border-border-subtle">
+                  <dt className="text-text-secondary">Chassis / VIN Check</dt>
+                  <dd className="font-semibold text-text-primary">
+                    {proof?.chassisCheck?.status === "verified" || (proof?.chassis_check_status === "Staff checked" && proof?.chassis_checked_date)
+                      ? "Staff checked & verified"
+                      : "Pending check"}
+                  </dd>
+                </div>
+
+                <div className="flex justify-between py-1.5 border-b border-border-subtle">
+                  <dt className="text-text-secondary">Duty & Import Status</dt>
+                  <dd className="font-semibold text-text-primary">
+                    {proof?.dutyStatus?.status === "verified" || proof?.duty_status === "Fully paid / duty cleared"
+                      ? "Fully paid / duty cleared"
+                      : "In processing"}
+                  </dd>
+                </div>
+
+                <div className="flex justify-between py-1.5 border-b border-border-subtle">
+                  <dt className="text-text-secondary">Logbook Transfer</dt>
+                  <dd className="font-semibold text-text-primary">
+                    {proof?.logbook?.status === "verified" || proof?.logbook_status === "Available at showroom"
+                      ? "Available at showroom"
+                      : "Pending transfer papers"}
+                  </dd>
+                </div>
+
+                <div className="flex justify-between py-1.5 border-b border-border-subtle">
+                  <dt className="text-text-secondary">Independent Inspection</dt>
+                  <dd className="font-semibold text-text-primary">
+                    Welcome (mechanic or AA Kenya)
+                  </dd>
+                </div>
+              </dl>
             </div>
 
             {/* Description */}

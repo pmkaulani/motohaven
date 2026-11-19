@@ -3,6 +3,7 @@ import { Enquiry, EnquiryStatus, CreateEnquiryInput } from "@/types/enquiry";
 import { VehiclesRepository } from "./vehicles";
 import { StaffSessionPayload } from "@/lib/auth/session";
 import { AuthError } from "@/lib/auth/guards";
+import { canAcceptVehicleEnquiry } from "@/lib/repositories/visibility";
 
 const ALLOWED_STATUSES: EnquiryStatus[] = [
   "New",
@@ -60,10 +61,14 @@ export const EnquiriesRepository = {
 
     if (input.vehicle_id) {
       const vehicle = await VehiclesRepository.getPublishedVehicleById(input.vehicle_id);
-      if (vehicle) {
-        vehicle_name = `${vehicle.year} ${vehicle.brand} ${vehicle.model}`;
-        vehicle_price = vehicle.price;
+      if (!vehicle) {
+        throw new Error("Specified vehicle could not be found or is not published.");
       }
+      if (!canAcceptVehicleEnquiry(vehicle.status)) {
+        throw new Error(`This vehicle is ${vehicle.status.toLowerCase()} and is not currently accepting booking enquiries.`);
+      }
+      vehicle_name = `${vehicle.year} ${vehicle.brand} ${vehicle.model}${vehicle.trim ? ` ${vehicle.trim}` : ""}`;
+      vehicle_price = vehicle.price;
     }
 
     // 4. Force default workflow state: status = "New", notes = undefined

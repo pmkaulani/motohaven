@@ -1,40 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import crypto from "crypto";
 import { requireStaff, handleAuthError } from "@/lib/auth/guards";
-
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
-
-type ImageFormat = "jpeg" | "png" | "webp";
-
-function detectImageFormat(buffer: Buffer): ImageFormat | null {
-  if (buffer.length < 12) return null;
-
-  // JPEG: FF D8 FF
-  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
-    return "jpeg";
-  }
-
-  // PNG: 89 50 4E 47 0D 0A 1A 0A
-  if (
-    buffer[0] === 0x89 &&
-    buffer[1] === 0x50 &&
-    buffer[2] === 0x4e &&
-    buffer[3] === 0x47
-  ) {
-    return "png";
-  }
-
-  // WebP: 'RIFF' at 0..3 and 'WEBP' at 8..11
-  const riff = buffer.toString("ascii", 0, 4);
-  const webp = buffer.toString("ascii", 8, 12);
-  if (riff === "RIFF" && webp === "WEBP") {
-    return "webp";
-  }
-
-  return null;
-}
+import {
+  uploadToStorage,
+  validateImageMagicBytes,
+  MAX_FILE_SIZE_BYTES,
+  MAX_FILES_PER_REQUEST,
+  MAX_AGGREGATE_UPLOAD_BYTES,
+} from "@/lib/storage/adapter";
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,17 +15,33 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
     const files = formData.getAll("photos") as File[];
+    const bucketParam = formData.get("bucket") as string;
+    const bucket = bucketParam === "evidence-docs" ? "evidence-docs" : "car-photos";
 
     if (!files || files.length === 0) {
-      return NextResponse.json({ error: "No photos provided." }, { status: 400 });
+      return NextResponse.json({ error: "No files provided." }, { status: 400 });
     }
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    if (files.length > MAX_FILES_PER_REQUEST) {
+      return NextResponse.json(
+        { error: `Too many files. Maximum allowed per request is ${MAX_FILES_PER_REQUEST}.` },
+        { status: 400 }
+      );
     }
 
-    const uploadedUrls: string[] = [];
+    // Check aggregate request size
+    let aggregateBytes = 0;
+    for (const f of files) {
+      aggregateBytes += f.size;
+    }
+    if (aggregateBytes > MAX_AGGREGATE_UPLOAD_BYTES) {
+      return NextResponse.json(
+        { error: "Total upload size exceeds the permitted 30 MB aggregate limit." },
+        { status: 400 }
+      );
+    }
+
+    const uploadedResults = [];
 
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE_BYTES) {
@@ -64,7 +52,7 @@ export async function POST(req: NextRequest) {
       }
 
       const buffer = Buffer.from(await file.arrayBuffer());
-      const detectedFormat = detectImageFormat(buffer);
+      const detectedFormat = validateImageMagicBytes(buffer);
 
       if (!detectedFormat) {
         return NextResponse.json(
@@ -73,16 +61,16 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Generate strictly trusted extension from verified magic bytes
-      const ext = detectedFormat === "jpeg" ? ".jpg" : `.${detectedFormat}`;
-      const safeRandomName = `${Date.now()}-${crypto.randomBytes(8).toString("hex")}${ext}`;
-      const filePath = path.join(uploadDir, safeRandomName);
-
-      fs.writeFileSync(filePath, buffer);
-      uploadedUrls.push(`/uploads/${safeRandomName}`);
+      const result = await uploadToStorage(buffer, detectedFormat, bucket);
+      uploadedResults.push(result);
     }
 
-    return NextResponse.json({ success: true, urls: uploadedUrls });
+    return NextResponse.json({
+      success: true,
+      urls: uploadedResults.map((r) => r.url),
+      keys: uploadedResults.map((r) => r.key),
+      files: uploadedResults,
+    });
   } catch (error) {
     const authResp = handleAuthError(error);
     if (authResp) return authResp;

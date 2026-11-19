@@ -39,3 +39,4 @@ next-env.d.ts
 build_pack_temp/
 *.zip
 data/*.tmp
+data/backups/

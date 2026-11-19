@@ -12,6 +12,8 @@ interface VehicleGalleryProps {
 export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const openerElementRef = React.useRef<HTMLElement | null>(null);
+  const lightboxRef = React.useRef<HTMLDivElement | null>(null);
 
   // Combine cover photo and other photos, eliminating duplicates
   const rawList = [];
@@ -30,20 +32,53 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
     setActiveIndex((prev) => (prev === safeImages.length - 1 ? 0 : prev + 1));
   };
 
-  // Keyboard navigation for lightbox (Escape to close, Arrow keys to navigate)
+  const openLightbox = (e?: React.MouseEvent) => {
+    openerElementRef.current = (e?.currentTarget as HTMLElement) || (document.activeElement as HTMLElement | null);
+    setLightboxOpen(true);
+  };
+
+  // Keyboard navigation & focus management for lightbox
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!lightboxOpen) return;
-      if (e.key === "Escape") {
-        setLightboxOpen(false);
-      } else if (e.key === "ArrowLeft") {
-        setActiveIndex((prev) => (prev === 0 ? safeImages.length - 1 : prev - 1));
-      } else if (e.key === "ArrowRight") {
-        setActiveIndex((prev) => (prev === safeImages.length - 1 ? 0 : prev + 1));
+    if (lightboxOpen) {
+      const container = lightboxRef.current;
+      if (container) {
+        const focusable = container.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length > 0) {
+          focusable[0].focus();
+        }
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+          if (e.key === "Escape") {
+            setLightboxOpen(false);
+          } else if (e.key === "ArrowLeft") {
+            setActiveIndex((prev) => (prev === 0 ? safeImages.length - 1 : prev - 1));
+          } else if (e.key === "ArrowRight") {
+            setActiveIndex((prev) => (prev === safeImages.length - 1 ? 0 : prev + 1));
+          } else if (e.key === "Tab") {
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey) {
+              if (document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+              }
+            } else {
+              if (document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+              }
+            }
+          }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
       }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    } else {
+      openerElementRef.current?.focus();
+    }
   }, [lightboxOpen, safeImages.length]);
 
   return (
@@ -55,7 +90,7 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
           src={safeImages[activeIndex]}
           alt={`${vehicleTitle} - Photo ${activeIndex + 1} of ${safeImages.length}`}
           className="w-full h-full object-cover cursor-zoom-in"
-          onClick={() => setLightboxOpen(true)}
+          onClick={openLightbox}
         />
 
         {/* Quiet Arrow Controls */}
@@ -87,7 +122,7 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
           </span>
           <button
             type="button"
-            onClick={() => setLightboxOpen(true)}
+            onClick={openLightbox}
             className="p-2 bg-black/70 backdrop-blur-sm text-white hover:bg-black rounded-full transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
             title="Full size view"
             aria-label="Open full size photo viewer"
@@ -126,6 +161,7 @@ export function VehicleGallery({ photos, coverPhoto, vehicleTitle }: VehicleGall
       {/* Accessible Fullscreen Lightbox (Fixes Finding 8 & 14) */}
       {lightboxOpen && (
         <div
+          ref={lightboxRef}
           role="dialog"
           aria-modal="true"
           aria-label={`Photo gallery for ${vehicleTitle}`}

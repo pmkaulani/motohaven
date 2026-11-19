@@ -2,6 +2,7 @@ import { LocalDB } from "@/lib/db/local-db";
 import { Vehicle, VehicleFilterParams, PaginatedVehicles } from "@/types/vehicle";
 import { StaffSessionPayload } from "@/lib/auth/session";
 import { AuthError } from "@/lib/auth/guards";
+import { isPublicVehicleStatus } from "@/lib/repositories/visibility";
 
 export const VehiclesRepository = {
   /**
@@ -25,14 +26,13 @@ export const VehiclesRepository = {
 
   /**
    * Retrieves a vehicle for public display by its slug.
-   * STRICT GUARANTEE: Returns NULL if the vehicle is in Draft or Archived status (Defect D3 fix).
+   * STRICT VISIBILITY POLICY: Returns Available, Reserved, and Sold. Strictly returns NULL for Draft or Archived.
    */
   async getPublishedVehicleBySlug(slug: string): Promise<Vehicle | null> {
     const vehicle = LocalDB.getVehicleBySlug(slug);
     if (!vehicle) return null;
 
-    // Public visitor access: strictly block Draft or Archived
-    if (vehicle.status !== "Available" && vehicle.status !== "Reserved") {
+    if (!isPublicVehicleStatus(vehicle.status)) {
       return null;
     }
 
@@ -41,13 +41,13 @@ export const VehiclesRepository = {
 
   /**
    * Retrieves a vehicle for public display by ID (Finding R9 fix).
-   * STRICT GUARANTEE: Returns NULL if vehicle is in Draft or Archived status.
+   * STRICT VISIBILITY POLICY: Returns Available, Reserved, and Sold. Strictly returns NULL for Draft or Archived.
    */
   async getPublishedVehicleById(id: string): Promise<Vehicle | null> {
     const vehicle = LocalDB.getVehicleById(id);
     if (!vehicle) return null;
 
-    if (vehicle.status !== "Available" && vehicle.status !== "Reserved") {
+    if (!isPublicVehicleStatus(vehicle.status)) {
       return null;
     }
 
